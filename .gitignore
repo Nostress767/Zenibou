@@ -1,0 +1,9 @@
+controller/
+networking/
+sound/
+tests/
+Serokuchi.c
+Makefile
+*.obj
+*.exe
+*.out
