@@ -3,7 +3,7 @@ of=/Foobj\$(*B).o
 lf=/NOLOGO /SUBSYSTEM:console /ENTRY:mainCRTStartup /LIBPATH:obj
 
 ecf=/DRAYLIB /I.\raylib\include
-elf=/LIBPATH:.\raylib\lib raylib.lib
+elf=/LIBPATH:.\raylib\lib traylib.lib
 
 deps=obj\Clock.o obj\Input.o
 edeps=obj\Clock.o obj\Input.o
