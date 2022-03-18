@@ -5,32 +5,37 @@
 #include "fonts/font5x5.h"
 #include "sprites/test.h"
 
+// TODO: Fix sprite and font generating scripts (change DrawPixel to D, and check if fail or no fail)
+
 int main(void){
-  InitWindow(600,600,"Example");
-
-  while(!WindowShouldClose()){
-    BeginDrawing();
-
-    for(int i = 0; i < 75; i++)
-      for(int j = 0; j < 75; j++){
-        // Color is defined as RGBA (just like raylib)
-        unsigned int color = (rand() & 0x0FF0) << 20 | (rand() & 0x0FF0) << 12 | (rand() & 0x0FF0) << 8 | 0xFF;
-        DrawRectangle(j << 3, i << 3, 8, 8, color);}
-
-    for(int i = 0; i < 256; i++){
-      if(IsKeyPressed(i))
-        printf("The pressed key is %X ('%c'). %lf(%lf)\n", i, i, GetFrameTime(), GetTime());
-      if(IsKeyReleased(i))
-        printf("The released key is %X ('%c'). %lf(%lf)\n", i, i, GetFrameTime(), GetTime());}
-
-    DrawString5x6(0,100, "The quick brown fox jumps\n over the lazy dog.!@#$%^\n&*()<>",0x00FFFF, 4, 1, 5);
-    DrawString5x5(0,200,"The quick brown fox jumps\n over the lazy dog.!@#$%^\n&*()<>",0x00FFFFFF, 4, 1, 5);
-    DrawSpriteTest24x24(0, 360, "The quick brown fox jumps\n over the lazy dog.!@#$%^&*()<>", 1);
-
-    EndDrawing();
+  StartEngine(600,600,"サンプル");
+  char stringo[12] = {0};
+  while(Window.is_running){
+    BeginFrame();
+      if(Key['Q'].is_pressed)
+        SetWindowSizes(640,480);
+      else if(Key['W'].is_pressed)
+        SetWindowSizes(1280,720);
+      else if(Key['E'].is_pressed)
+        SetWindowSizes(1920,1080);
+      else if(Key['R'].is_pressed)
+        SetWindowSizes(600,600);
+      else if(Key['T'].is_pressed)
+        // TODO: maybe kill the window in a cleaner way?
+        Window.is_running = false;
+      for(int i = 0; i < 512; i++){
+        if(Key[i].is_pressed)
+          printf("The pressed key is %03X ('%03d'). It was pressed on frame %llu(%lf)\n", i, i, Clock.frame, Clock.total_elapsed_time);
+        if(Key[i].is_released)
+          printf("The released key is %03X ('%03d'). It was released on frame %llu(%lf)\n", i, i, Clock.frame, Clock.total_elapsed_time);}
+      DrawString5x5(0,200,"The quick brown fox jumps\n over the lazy dog.!@#$%^\n&*()<>",0x00FFFFFF, 4, 1, 5);
+      C(0xFFFF00FF);
+      D(100,100,0xFF0000FF);
+      snprintf(stringo,11,"FPS: %05d\n",Clock.frames_last_second);
+      DrawSpriteTest24x24(0, 360, "The quick brown fox jumps\n over the lazy dog.!@#$%^&*()<>", 1);
+      DrawString5x6(0,100, "The quick brown fox jumps\n over the lazy dog.!@#$%^\n&*()<>",0xFF0000FF, 4, 1, 5);
+      DrawString5x6(0,200, stringo, 0xFF0000FF, 4, 1, 5);
+    EndFrame();
   }
-
-
-  CloseWindow();
   return 0;
 }
