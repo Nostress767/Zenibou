@@ -126,6 +126,93 @@ void ClearBackground(uint32_t color){
   for(int i = 0; i < Window.width * Window.height; ++i)
     *pixel++ = color;}
 
+void UpdateKeyState(uint32_t key, uint32_t bitfield){
+#ifdef RAYLIB
+  (void)bitfield;
+// Snippets from raylib. NOTE: do I need those keys?
+//    KEY_NULL            = 0,        // Key: NULL, used for no key pressed
+//    KEY_KB_MENU         = 348,      // Key: KB menu
+  Key[key].is_pressed  = IsKeyPressed(key);
+  Key[key].is_released = IsKeyReleased(key);
+}
+#else
+  uint32_t mapped_key = key;
+  bool was_down = bitfield >> 30 & 1;
+  bool is_down = bitfield >> 31 ^ 1;
+
+  switch(key){
+    // NOTE: if there is any need to differentiate 'A' from 'a' (or any other shift key) come back to this, but beware of compatibility with raylib
+    case VK_SPACE:      mapped_key = kSpace;        break;
+    case VK_OEM_7:      mapped_key = kQuotes;       break;
+    case VK_OEM_COMMA:  mapped_key = kComma;        break;
+    case VK_OEM_MINUS:  mapped_key = kMinus;        break;
+    case VK_OEM_PERIOD: mapped_key = kPeriod;       break;
+    case VK_OEM_2:      mapped_key = kFrontSlash;   break;
+    case VK_OEM_1:      mapped_key = kSemicolon;    break;
+    case VK_OEM_PLUS:   mapped_key = kEqual;        break;
+    case VK_OEM_4:      mapped_key = kLeftBracket;  break;
+    case VK_OEM_5:      mapped_key = kBackSlash;    break;
+    case VK_OEM_6:      mapped_key = kRightBracket; break;
+    case VK_OEM_3:      mapped_key = kBacktick;     break;
+    case VK_ESCAPE:     mapped_key = kEscape;       break;
+    case VK_RETURN:     mapped_key = kEnter;        break;
+    case VK_TAB:        mapped_key = kTab;          break;
+    case VK_BACK:       mapped_key = kBackspace;    break;
+    case VK_INSERT:     mapped_key = kInsert;       break;
+    case VK_DELETE:     mapped_key = kDelete;       break;
+    case VK_RIGHT:      mapped_key = kRight;        break;
+    case VK_LEFT:       mapped_key = kLeft;         break;
+    case VK_DOWN:       mapped_key = kDown;         break;
+    case VK_UP:         mapped_key = kUp;           break;
+    case VK_PRIOR:      mapped_key = kPageUp;       break;
+    case VK_NEXT:       mapped_key = kPageDown;     break;
+    case VK_HOME:       mapped_key = kHome;         break;
+    case VK_END:        mapped_key = kEnd;          break;
+    case VK_CAPITAL:    mapped_key = kCapslock;     break;
+    case VK_SCROLL:     mapped_key = kScrollLock;   break;
+    case VK_NUMLOCK:    mapped_key = kNumLock;      break;
+    case VK_SNAPSHOT:   mapped_key = kPrintScreen;  break;
+    case VK_PAUSE:      mapped_key = kPauseBreak;   break;
+    case VK_F1:         mapped_key = kF1;           break;
+    case VK_F2:         mapped_key = kF2;           break;
+    case VK_F3:         mapped_key = kF3;           break;
+    case VK_F4:         mapped_key = kF4;           break;
+    case VK_F5:         mapped_key = kF5;           break;
+    case VK_F6:         mapped_key = kF6;           break;
+    case VK_F7:         mapped_key = kF7;           break;
+    case VK_F8:         mapped_key = kF8;           break;
+    case VK_F9:         mapped_key = kF9;           break;
+    case VK_F10:        mapped_key = kF10;          break;
+    case VK_F11:        mapped_key = kF11;          break;
+    case VK_F12:        mapped_key = kF12;          break;
+    case VK_NUMPAD0:    mapped_key = kNumpad0;      break;
+    case VK_NUMPAD1:    mapped_key = kNumpad1;      break;
+    case VK_NUMPAD2:    mapped_key = kNumpad2;      break;
+    case VK_NUMPAD3:    mapped_key = kNumpad3;      break;
+    case VK_NUMPAD4:    mapped_key = kNumpad4;      break;
+    case VK_NUMPAD5:    mapped_key = kNumpad5;      break;
+    case VK_NUMPAD6:    mapped_key = kNumpad6;      break;
+    case VK_NUMPAD7:    mapped_key = kNumpad7;      break;
+    case VK_NUMPAD8:    mapped_key = kNumpad8;      break;
+    case VK_NUMPAD9:    mapped_key = kNumpad9;      break;
+    case VK_DECIMAL:    mapped_key = kDecimal;      break;
+    case VK_DIVIDE:     mapped_key = kDivide;       break;
+    case VK_MULTIPLY:   mapped_key = kMultiply;     break;
+    case VK_SUBTRACT:   mapped_key = kSubtract;     break;
+    case VK_ADD:        mapped_key = kAdd;          break;
+    case VK_LSHIFT:     mapped_key = kLeftShift;    break;
+    case VK_LCONTROL:   mapped_key = kLeftCtrl;     break;
+    case VK_LMENU:      mapped_key = kLeftAlt;      break;
+    case VK_LWIN:       mapped_key = kLeftSuper;    break;
+    case VK_RSHIFT:     mapped_key = kRightShift;   break;
+    case VK_RCONTROL:   mapped_key = kRightCtrl;    break;
+    case VK_RMENU:      mapped_key = kRightAlt;     break;
+    case VK_RWIN:       mapped_key = kRightSuper;   break;
+  }
+  Key[mapped_key].is_pressed  = (!was_down) & ( is_down);
+  Key[mapped_key].is_held     = ( was_down) & ( is_down);
+  Key[mapped_key].is_released = ( was_down) & (!is_down);
+}
 LRESULT CALLBACK WindowProcedure(HWND window, UINT message, WPARAM w_param, LPARAM l_param){
   switch(message){
     case WM_MOUSEMOVE:{
