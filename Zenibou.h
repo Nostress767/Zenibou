@@ -1,8 +1,10 @@
 ﻿#ifndef _ZENIBOU_ZENIBOU_H_
 #define _ZENIBOU_ZENIBOU_H_
 
+#ifndef PLATFORM_WEB
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "gdi32.lib")
+#endif
 #include "include/Clock.h"
 #include "include/Input.h"
 #include <stdint.h>
@@ -10,9 +12,11 @@
 
 #ifdef RAYLIB
   #include "raylib.h"
+#ifndef PLATFORM_WEB
   #pragma comment(lib, "winmm.lib")
   #pragma comment(lib, "kernel32.lib")
   #pragma comment(lib, "shell32.lib")
+#endif
 // TODO: investigate whatever this is: (https://docs.microsoft.com/en-us/windows/win32/gdi/alpha-blending) (https://docs.microsoft.com/en-us/windows/win32/gdi/alpha-blending-a-bitmap)
   // TODO: investigate multithreading in C for message loop (https://docs.microsoft.com/en-us/cpp/parallel/multithreading-with-c-and-win32?view=msvc-170)
   // TODO: investigate tcc(tiny c compiler)'s compiling capabilities and figure out if could compile out of the box (downloading), copy from raylib command

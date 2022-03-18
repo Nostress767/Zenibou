@@ -9,6 +9,11 @@ After doing so, you may run:
 
     nmake ray
 
+You can also compile for web now! To do so, get emscripten SDK (you may follow [raylib's guide](https://github.com/raysan5/raylib/wiki/Working-for-Web-(HTML5))), and python to be able to serve http on localhost.
+Now, just run:
+
+    nmake web
+
 How this project came to be:
 
 [Win32-Drawing-Pixels](https://samulinatri.com/blog/win32-drawing-pixels/)

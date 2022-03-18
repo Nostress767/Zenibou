@@ -67,11 +67,13 @@ void EndFrame(void){
   BeginDrawing();
   DrawTexturePro(Window.bitmap_device_context, Window.screen, Window.screen, Window.origin, 0.f, WHITE);
   EndDrawing();
+#ifndef PLATFORM_WEB
   if(!Window.is_running)
     CloseWindow();
   Window.is_running = !WindowShouldClose();
   if(!Window.is_running)
     CloseWindow();
+#endif
 #else
   StretchDIBits(Window.bitmap_device_context,
                 0,0,
@@ -205,6 +207,7 @@ void UpdateKeyState(uint32_t key, uint32_t bitfield){
     case VK_SUBTRACT:   mapped_key = kSubtract;     break;
     case VK_ADD:        mapped_key = kAdd;          break;
     // TODO: fix special VK_KEYS with left right variants
+    case VK_SHIFT:
     case VK_LSHIFT:     mapped_key = kLeftShift;    break;
     case VK_LCONTROL:   mapped_key = kLeftCtrl;     break;
     case VK_LMENU:      mapped_key = kLeftAlt;      break;

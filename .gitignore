@@ -5,5 +5,8 @@ tests/
 raylib/
 obj/
 Serokuchi.c
-*.exe
+Example.html
+Example.js
+Example.wasm
+Example.exe
 *.out
