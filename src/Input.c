@@ -1,7 +1,7 @@
 #ifndef _ZENIBOU_INPUT_HANDLING_C_
 #define _ZENIBOU_INPUT_HANDLING_C_
 
-#include "../include/Input.h"
+#include "Input.h"
 
 struct Mouse Mouse;
 
