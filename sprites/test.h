@@ -165,11 +165,11 @@ void DrawSpriteTest24x24(int32_t x, int32_t y, const char* text, uint32_t scale)
           for(uint32_t k = 0; k < 24; k++)
             for (uint32_t scaled_i = 0; scaled_i < scale; scaled_i++)
               for (uint32_t scaled_j = 0; scaled_j < scale; scaled_j++)
-                DrawPixel(x + text_x + (k * scale) + scaled_i, y + text_y + (j * scale) + scaled_j, ASSTest24x24[char_index_y * 24 + j][char_index_x*24 + k]);}
+                D(x + text_x + (k * scale) + scaled_i, y + text_y + (j * scale) + scaled_j, ASSTest24x24[char_index_y * 24 + j][char_index_x*24 + k]);}
       else{
         for(uint32_t j = 0; j < 24; j++)
           for(uint32_t k = 0; k < 24; k++)
-            DrawPixel(x + text_x + k, y + text_y + j, ASSTest24x24[char_index_y * 24 + j][char_index_x*24 + k]);}
+            D(x + text_x + k, y + text_y + j, ASSTest24x24[char_index_y * 24 + j][char_index_x*24 + k]);}
       text_x += 24 * scale ;}}
 }
 

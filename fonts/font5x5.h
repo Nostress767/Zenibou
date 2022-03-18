@@ -51,12 +51,12 @@ void DrawString5x5(int32_t x, int32_t y, const char* text, uint32_t color, uint3
             if(font5x5[k + char_index_y * 5][j + char_index_x * 5])
               for (uint32_t scaled_i = 0; scaled_i < scale; scaled_i++)
                 for (uint32_t scaled_j = 0; scaled_j < scale; scaled_j++)
-                  DrawPixel(x + text_x + (j * scale) + scaled_i, y + text_y + (k * scale) + scaled_j, color);}
+                  D(x + text_x + (j * scale) + scaled_i, y + text_y + (k * scale) + scaled_j, color);}
       else{
         for(uint32_t j = 0; j < 5; j++)
           for(uint32_t k = 0; k < 5; k++)
             if(font5x5[k + char_index_y * 5][j + char_index_x * 5])
-              DrawPixel(x + text_x + j, y + text_y + k, color);}
+              D(x + text_x + j, y + text_y + k, color);}
       text_x += (5 + spacing_x) * scale ;}}
 }
 
