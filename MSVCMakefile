@@ -1,0 +1,37 @@
+cc=cl.exe
+cflags=/c /F10000000 /nologo /W4 /MD /O2
+
+rayc=/FoExample.obj /I C:\Clibs\raylib-4.0.0_win32_msvc16\include /DRAYLIB
+raylib=/LIBPATH:C:\Clibs\raylib-4.0.0_win32_msvc16\lib raylib.lib user32.lib winmm.lib kernel32.lib shell32.lib gdi32.lib
+link=link
+lflags=/NOLOGO /SUBSYSTEM:console /ENTRY:mainCRTStartup
+libs=user32.lib gdi32.lib
+
+all: Example.exe
+
+Clock.obj:
+	$(cc) $(cflags) $*.c
+
+InputHandling.obj:
+	$(cc) $(cflags) $*.c
+
+Zenibou.obj:
+	$(cc) $(cflags) $*.c
+
+Example:
+	$(cc) $(cflags) Example.c
+
+Example.exe: Example Clock.obj InputHandling.obj Zenibou.obj
+	$(link) $(lflags) Example.obj Clock.obj InputHandling.obj Zenibou.obj $(libs)
+
+clean: cleanbuild all
+
+raygame:
+	$(cc) $(cflags) $(rayc) Example.c
+
+ray: raygame
+	$(link) $(lflags) $(raylib) Example.obj
+
+
+cleanbuild:
+	del *.obj
