@@ -12,8 +12,14 @@ After doing so, you may run:
 How this project came to be:
 
 [Win32-Drawing-Pixels](https://samulinatri.com/blog/win32-drawing-pixels/)
+
 [Handmade Hero](https://handmadehero.org/)
+
 [This channel](https://www.youtube.com/channel/UCaTznQhurW5AaiYPbhEA-KA)
+
 [One Lone Coder's PixelGameEngine](https://github.com/OneLoneCoder/olcPixelGameEngine)
+
 [raylib](https://github.com/raysan5/raylib)
+
 [mackron's miniaudio](https://github.com/mackron/miniaudio)
+
