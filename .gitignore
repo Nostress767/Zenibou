@@ -4,6 +4,7 @@ sound/
 tests/
 raylib/
 obj/
+tcc/
 Serokuchi.c
 Example.html
 Example.js
