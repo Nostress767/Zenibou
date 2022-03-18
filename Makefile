@@ -12,6 +12,7 @@ Example: $(deps)
 	cl $(cf) /Foobj\Zenibou.o src\Zenibou.c
 	cl $(cf) $(of) Example.c
 	link $(lf) Example.o Zenibou.o Clock.o Input.o
+	Example.exe
 
 $(deps):
 	mkdir obj || ver > nul
@@ -28,6 +29,7 @@ ray: $(deps)
 	cl $(ecf) $(cf) /Foobj\Zenibou.o src\Zenibou.c
 	cl $(cf) /Foobj\Example.o Example.c
 	link $(lf) $(elf) Example.o Zenibou.o Clock.o Input.o
+	Example.exe
 
 web:
 	setlocal
