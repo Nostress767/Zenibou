@@ -1,13 +1,6 @@
 ﻿#ifndef _ZENIBOU_ZENIBOU_C_
 #define _ZENIBOU_ZENIBOU_C_
-
-#include <windowsx.h>
 #include "Zenibou.h"
-
-#undef DrawPixel
-#undef DrawRectangle
-#undef ClearBackground
-#undef InitWindow
 
 struct Window Window;
 
