@@ -14,6 +14,8 @@ int32_t SetWindowSizes(int32_t size_x, int32_t size_y){
   Window.bitmap_device_context = LoadTextureFromImage(Window.bitmap_info);
   Window.width = size_x;
   Window.height = size_y;
+  // NOTE: another rectangle (source and dest) could be used for scaling the texture
+  Window.screen = (Rectangle){0.f, 0.f, (float) Window.width, (float) Window.height};
   int monitor = GetCurrentMonitor();
   Window.current_pos_x = (GetMonitorWidth(monitor) / 2) - (size_x / 2);
   Window.current_pos_y = (GetMonitorHeight(monitor) / 2) - (size_y / 2);
@@ -63,7 +65,7 @@ void EndFrame(void){
 #ifdef RAYLIB
   UpdateTexture(Window.bitmap_device_context, Window.bitmap_memory);
   BeginDrawing();
-  DrawTexture(Window.bitmap_device_context, 0, 0, WHITE);
+  DrawTexturePro(Window.bitmap_device_context, Window.screen, Window.screen, Window.origin, 0.f, WHITE);
   EndDrawing();
   if(!Window.is_running)
     CloseWindow();
@@ -283,6 +285,8 @@ int32_t StartEngine(int32_t size_x, int32_t size_y, const char* name){
   Window.width = size_x;
   Window.height = size_y;
   Window.is_running = true;
+  Window.origin = (Vector2){0};
+  Window.screen = (Rectangle){0.f, 0.f, (float) Window.width, (float) Window.height};
   InitializeClock();
   return 0;
 #else  

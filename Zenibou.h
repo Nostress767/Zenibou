@@ -34,6 +34,8 @@ struct Window{
   #ifdef RAYLIB
     Image bitmap_info;
     Texture2D bitmap_device_context;
+    Vector2 origin;
+    Rectangle screen;
   #else
     BITMAPINFO bitmap_info;
     HDC bitmap_device_context;
