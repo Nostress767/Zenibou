@@ -6,12 +6,11 @@
 
 void InitializeClock(void);
 void Tick(void);
-double GetTime(void);
-double GetFrameTime(void);
 
 struct Clock{
   double last_second_elapsed_time, last_frame_elapsed_time, total_elapsed_time;
   uint64_t frame;
+  int32_t frames_last_second;
   clock_t time1, time2;};
 
 extern struct Clock Clock;
