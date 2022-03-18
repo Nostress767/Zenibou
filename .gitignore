@@ -5,6 +5,5 @@ tests/
 raylib/
 obj/
 Serokuchi.c
-Makefile
 *.exe
 *.out

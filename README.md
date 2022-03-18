@@ -2,12 +2,12 @@ This is a simple engine for starting a window, capturing inputs and drawing pixe
 
 Using [Visual Studio 2022 Developer Command Prompt](https://visualstudio.microsoft.com/downloads/?q=build+tools) with vcvarsall.bat Environment initialized for: 'x86' to compile, simply run:
 
-    nmake /FMSVCMakefile
+    nmake
 
 You can also compile for [raylib](https://www.raylib.com/), but this will require you to change up the MSVCMakefile to include the correct paths for the "include" and "lib" folders (and to compile/install raylib, of course).
 After doing so, you may run:
 
-    nmake /FMSVCMakefile ray
+    nmake ray
 
 How this project came to be:
 
