@@ -14,6 +14,7 @@ Example: $(deps)
 	link $(lf) Example.o Zenibou.o Clock.o Input.o
 
 $(deps):
+	mkdir obj || ver > nul
 	cl $(cf) $(of) src\$(*B).c
 
 clean:
