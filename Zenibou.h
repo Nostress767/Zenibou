@@ -8,19 +8,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-uint32_t GetColor(uint32_t color);
-bool WindowShouldClose(void);
-void CloseWindow(void);
-int32_t GetScreenWidth(void);
-int32_t GetScreenHeight(void);
-LRESULT CALLBACK WindowProcedure(HWND window, UINT message, WPARAM w_param, LPARAM l_param);
-int32_t WINAPI SetWindowSize(int32_t size_x, int32_t size_y);
-int32_t WINAPI InitWindow(int32_t size_x, int32_t size_y, const wchar_t* name);
-void BeginDrawing(void);
-void EndDrawing(void);
-void DrawPixel(int32_t x, int32_t y, uint32_t color);
-void DrawRectangle(int32_t x, int32_t y, int32_t size_x, int32_t size_y, uint32_t color);
-void ClearBackground(uint32_t color);
 #ifdef RAYLIB
   #include "raylib.h"
   #pragma comment(lib, "winmm.lib")
@@ -44,14 +31,26 @@ struct Window{
   void* bitmap_memory;
   bool is_running;
   bool is_focused;
-  BITMAPINFO bitmap_info;
-  HDC bitmap_device_context;
-  MSG msg;
-  HWND handle;
+  #ifdef RAYLIB
+    Image bitmap_info;
+    Texture2D bitmap_device_context;
+  #else
+    BITMAPINFO bitmap_info;
+    HDC bitmap_device_context;
+    MSG msg;
+    HWND handle;
+  #endif
 };
 
 extern struct Window Window;
 
+void BeginFrame(void);
+void EndFrame(void);
+void D(int32_t x, int32_t y, uint32_t color);
+void C(uint32_t color);
+int32_t StartEngine(int32_t size_x, int32_t size_y, const char* name);
+int32_t SetWindowSizes(int32_t size_x, int32_t size_y);
+void UpdateKeyState(uint32_t key, uint32_t bitfield);
 
 // NOTE: this was used for checking high-DPI settings
 ////#pragma comment(lib, "shcore.lib")

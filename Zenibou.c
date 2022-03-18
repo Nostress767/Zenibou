@@ -4,17 +4,22 @@
 
 struct Window Window;
 
-uint32_t GetColor(uint32_t color){return (color>>8)|(color<<24);};
-
-bool WindowShouldClose(void){return !Window.is_running;}
-
-void CloseWindow(void){Window.is_running = false;}
-
-int32_t GetScreenWidth(void){return Window.width;}
-
-int32_t GetScreenHeight(void){return Window.height;}
-
-int32_t WINAPI SetWindowSize(int32_t size_x, int32_t size_y){
+int32_t SetWindowSizes(int32_t size_x, int32_t size_y){
+#ifdef RAYLIB
+  UnloadTexture(Window.bitmap_device_context);
+  UnloadImage(Window.bitmap_info);
+  MemFree(Window.bitmap_memory);
+  Window.bitmap_memory = MemAlloc(size_x * size_y * 4);
+  Window.bitmap_info = GenImageColor(size_x,size_y,BLACK);
+  Window.bitmap_device_context = LoadTextureFromImage(Window.bitmap_info);
+  Window.width = size_x;
+  Window.height = size_y;
+  int monitor = GetCurrentMonitor();
+  Window.current_pos_x = (GetMonitorWidth(monitor) / 2) - (size_x / 2);
+  Window.current_pos_y = (GetMonitorHeight(monitor) / 2) - (size_y / 2);
+  SetWindowSize(size_x,size_y);
+  SetWindowPosition(Window.current_pos_x, Window.current_pos_y);
+#else
   VirtualFree(Window.bitmap_memory, 0, MEM_RELEASE);
   Window.bitmap_memory = VirtualAlloc(0,size_x * size_y * 4,MEM_RESERVE|MEM_COMMIT,PAGE_READWRITE);
 
@@ -26,70 +31,46 @@ int32_t WINAPI SetWindowSize(int32_t size_x, int32_t size_y){
   Window.current_pos_x = (GetSystemMetrics(SM_CXSCREEN) / 2) - (size_x / 2);
   Window.current_pos_y = (GetSystemMetrics(SM_CYSCREEN) / 2) - (size_y / 2);
   MoveWindow(Window.handle, Window.current_pos_x, Window.current_pos_y, size_x, size_y, true);
-
+#endif
   return 0;}
 
-int32_t WINAPI InitWindow(int32_t size_x, int32_t size_y, const wchar_t* name){
-  SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
-  
-  HINSTANCE instance = GetModuleHandle(0);
+void BeginFrame(void){
+#ifdef RAYLIB
+  int32_t key;
+  while((key = GetKeyPressed()) != 0)
+    UpdateKeyState(key, 0);
 
-  const wchar_t class_name[] = L"Zenibou";
-  WNDCLASSW window_class = {.lpfnWndProc = WindowProcedure,.hInstance = instance,.style = CS_HREDRAW | CS_VREDRAW,
-                            .lpszClassName = class_name,.hCursor = LoadCursor(0, IDC_ARROW),};
-  ShowCursor(false);
+  // TODO: maybe make a UpdateMouseState for cleaner code
+  Mouse.left_pressed = IsMouseButtonPressed(kMouseLeft);
+  Mouse.middle_pressed = IsMouseButtonPressed(kMouseMiddle);
+  Mouse.right_pressed = IsMouseButtonPressed(kMouseRight);
 
-  RegisterClass(&window_class);
-  
-  Window.current_pos_x = (GetSystemMetrics(SM_CXSCREEN) / 2) - (size_x / 2);
-  Window.current_pos_y = (GetSystemMetrics(SM_CYSCREEN) / 2) - (size_y / 2);
-  
-  Window.handle = CreateWindowEx(//WS_EX_OVERLAPPEDWINDOW,
-                                 0, 
-                                 class_name, name,
-                                 WS_POPUP|WS_VISIBLE,
-                                 //|WS_VISIBLE,
-                                 Window.current_pos_x, // startx
-                                 Window.current_pos_y, // starty
-                                 size_x, // sizex
-                                 size_y, // sizey
-                                 0, 0, instance, 0);
+  Mouse.left_held = IsMouseButtonDown(kMouseLeft);
+  Mouse.middle_held = IsMouseButtonDown(kMouseMiddle);
+  Mouse.right_held = IsMouseButtonDown(kMouseRight);
 
-  Window.is_running = true;
-  InitializeClock();
-  
-  Window.bitmap_memory = VirtualAlloc(0,size_x * size_y * 4,MEM_RESERVE|MEM_COMMIT,PAGE_READWRITE);
-  Window.bitmap_info = (BITMAPINFO){ .bmiHeader = {.biSize = sizeof(Window.bitmap_info.bmiHeader), .biWidth = size_x,
-                                     .biHeight = size_y, .biPlanes = 1, .biBitCount = 32, .biCompression = BI_RGB}};
-  Window.bitmap_device_context = GetDC(Window.handle);
-  
-  return 0;
-}
-
-void BeginDrawing(void){
+  Mouse.left_released = IsMouseButtonReleased(kMouseLeft);
+  Mouse.middle_released = IsMouseButtonReleased(kMouseMiddle);
+  Mouse.right_released = IsMouseButtonReleased(kMouseRight);
+#else
   while(PeekMessage(&Window.msg, NULL, 0, 0, PM_REMOVE)){
-    //if(msg.message == WM_QUIT) running = false;
     TranslateMessage(&Window.msg);
-    DispatchMessage(&Window.msg);
-  }
+    DispatchMessage(&Window.msg);}
+#endif
 }
 
-void EndDrawing(void){
-  Tick();
-  //while(PeekMessage(&Window.msg, NULL, 0, 0, PM_REMOVE)){
-  //  TranslateMessage(&Window.msg);
-  //  DispatchMessage(&Window.msg);}
-
-  for(int32_t i = 0; i < 256; i++){
-    if(Key[i].was_pressed){
-      Key[i].was_pressed = false;
-      Key[i].was_held = true;
-      Key[i].was_released = false;}
-    else if(Key[i].was_released){
-      Key[i].was_pressed = false;
-      Key[i].was_held = false;
-      Key[i].was_released = false;}}
-
+void EndFrame(void){
+#ifdef RAYLIB
+  UpdateTexture(Window.bitmap_device_context, Window.bitmap_memory);
+  BeginDrawing();
+  DrawTexture(Window.bitmap_device_context, 0, 0, WHITE);
+  EndDrawing();
+  if(!Window.is_running)
+    CloseWindow();
+  Window.is_running = !WindowShouldClose();
+  if(!Window.is_running)
+    CloseWindow();
+#else
   StretchDIBits(Window.bitmap_device_context,
                 0,0,
                 Window.width,Window.height,
@@ -99,25 +80,52 @@ void EndDrawing(void){
                 &Window.bitmap_info,
                 DIB_RGB_COLORS,
                 SRCCOPY);
+#endif
+  for(int32_t i = 0; i < 512; i++){
+    if(Key[i].is_pressed){
+      Key[i].is_pressed = false;
+      Key[i].is_held = true;
+      Key[i].is_released = false;}
+    else if(Key[i].is_held){
+#ifdef RAYLIB
+      Key[i].is_held = IsKeyDown(i);
+      if(!Key[i].is_held)
+        Key[i].is_released = true;
+#endif
+      }
+    else if(Key[i].is_released){
+      Key[i].is_pressed = false;
+      Key[i].is_held = false;
+      Key[i].is_released = false;}}
+  Tick();
 }
 
-void DrawPixel(int32_t x, int32_t y, uint32_t color){
+void D(int32_t x, int32_t y, uint32_t color){
   if(x < 0 || y < 0 || x >= Window.width || y >= Window.height)
     return;
   uint32_t* pixel = (uint32_t *)Window.bitmap_memory;
+#ifdef RAYLIB
+  // Invert y, because of OpenGL reasons
+  pixel += (Window.height - y - 1) * Window.width + x;
+  // Gets optimized to a single bswap instruction, great!
+  *pixel = (color >> 24) | ((color >> 8) & 0xFF00) | ((color << 8) & 0xFF0000) | (color << 24);
+#else
   pixel += y * Window.width + x;
-  *pixel = color;}
-
-void DrawRectangle(int32_t x, int32_t y, int32_t size_x, int32_t size_y, uint32_t color){
-  for(int32_t i = 0; i < size_y; i++)
-    for(int32_t j = 0; j < size_x; j++)
-      DrawPixel(x+j, y+i, color);
+  // On zenibou its ARGB
+  // But we default RGBA, so roll over byte
+  *pixel = (color << 24) | (color >> 8);
+#endif
 }
 
-void ClearBackground(uint32_t color){
+void C(uint32_t color){
   uint32_t *pixel = (uint32_t *)Window.bitmap_memory;
   for(int i = 0; i < Window.width * Window.height; ++i)
-    *pixel++ = color;}
+  #ifdef RAYLIB
+    *pixel++ = (color >> 24) | ((color >> 8) & 0xFF00) | ((color << 8) & 0xFF0000) | (color << 24);
+  #else
+    *pixel++ = (color << 24) | (color >> 8);
+  #endif
+}
 
 void UpdateKeyState(uint32_t key, uint32_t bitfield){
 #ifdef RAYLIB
@@ -249,21 +257,6 @@ LRESULT CALLBACK WindowProcedure(HWND window, UINT message, WPARAM w_param, LPAR
     case WM_SYSKEYUP:
     case WM_KEYDOWN:{
       UpdateKeyState(w_param, l_param);
-        switch(w_param){
-          // "o" exits the program
-          case 'O':{
-            DestroyWindow(window);
-          }; break;
-          case 'Q':{
-            SetWindowSize(640,480);
-          }; break;
-          case 'W':{
-            SetWindowSize(1280,720);
-          }; break;
-          case 'E':{
-            SetWindowSize(1920,1080);
-          }; break;
-        }
     } return 0;
 
     case WM_CLOSE:{
@@ -275,7 +268,61 @@ LRESULT CALLBACK WindowProcedure(HWND window, UINT message, WPARAM w_param, LPAR
       Window.is_running = false;
     } return 0;
   }
-
   return DefWindowProc(window, message, w_param, l_param);  
 }
+#endif
+
+int32_t StartEngine(int32_t size_x, int32_t size_y, const char* name){
+#ifdef RAYLIB
+  InitWindow(size_x,size_y,name);
+  HideCursor();
+  SetWindowState(FLAG_WINDOW_UNDECORATED);
+  Window.bitmap_memory = MemAlloc(size_x * size_y * 4);
+  Window.bitmap_info = GenImageColor(size_x,size_y,BLACK);
+  Window.bitmap_device_context = LoadTextureFromImage(Window.bitmap_info);
+  Window.width = size_x;
+  Window.height = size_y;
+  Window.is_running = true;
+  InitializeClock();
+  return 0;
+#else  
+  wchar_t title[256];
+  MultiByteToWideChar(CP_UTF8,0,name,-1,title,MultiByteToWideChar(CP_UTF8,0,name,-1,NULL,0));
+  SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
+  
+  HINSTANCE instance = GetModuleHandle(0);
+
+  const wchar_t class_name[] = L"Zenibou";
+  WNDCLASSW window_class = {.lpfnWndProc = WindowProcedure,.hInstance = instance,.style = CS_HREDRAW | CS_VREDRAW,
+                            .lpszClassName = class_name,.hCursor = LoadCursor(0, IDC_ARROW),};
+  ShowCursor(false);
+
+  RegisterClass(&window_class);
+  
+  Window.current_pos_x = (GetSystemMetrics(SM_CXSCREEN) / 2) - (size_x / 2);
+  Window.current_pos_y = (GetSystemMetrics(SM_CYSCREEN) / 2) - (size_y / 2); 
+
+  Window.handle = CreateWindowEx(//WS_EX_OVERLAPPEDWINDOW,
+                                 0, 
+                                 class_name, title,
+                                 WS_POPUP|WS_VISIBLE,
+                                 //|WS_VISIBLE,
+                                 Window.current_pos_x, // startx
+                                 Window.current_pos_y, // starty
+                                 size_x, // sizex
+                                 size_y, // sizey
+                                 0, 0, instance, 0);
+
+  Window.is_running = true;
+  InitializeClock();
+  
+  Window.bitmap_memory = VirtualAlloc(0,size_x * size_y * 4,MEM_RESERVE|MEM_COMMIT,PAGE_READWRITE);
+  Window.bitmap_info = (BITMAPINFO){ .bmiHeader = {.biSize = sizeof(Window.bitmap_info.bmiHeader), .biWidth = size_x,
+                                     .biHeight = size_y, .biPlanes = 1, .biBitCount = 32, .biCompression = BI_RGB}};
+  Window.bitmap_device_context = GetDC(Window.handle);
+  
+  return 0;
+#endif
+}
+
 #endif
