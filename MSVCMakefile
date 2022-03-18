@@ -1,5 +1,5 @@
 cc=cl.exe
-cflags=/c /utf-8 /F10000000 /nologo /W4 /MD /O2
+cflags=/c /utf-8 /F10000000 /nologo /W4 /MD /O2 /Iinclude /I. /Foobj\\
 
 incray=/DRAYLIB /I.\raylib\include
 raylib=/LIBPATH:.\raylib\lib raylib.lib
@@ -27,15 +27,15 @@ Example:
 	$(cc) $(cflags) Example.c
 
 Example.exe: Example Clock.obj Input.obj Zenibou
-	$(link) $(lflags) Example.obj Clock.obj Input.obj Zenibou.obj
+	$(link) $(lflags) obj/Example.obj obj/Clock.obj obj/Input.obj obj/Zenibou.obj
 
-clean: cleanbuild all
+clean:
+	del obj\*.obj
+	del Example.exe
 
 raygame:
 	$(cc) $(cflags) Example.c
 
 ray: raygame Clock.obj Input.obj rayZenibou
-	$(link) $(lflags) $(raylib) Example.obj Zenibou.obj Clock.obj Input.obj
+	$(link) $(lflags) $(raylib) obj/Example.obj obj/Zenibou.obj obj/Clock.obj obj/Input.obj
 
-cleanbuild:
-	del *.obj

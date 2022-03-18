@@ -3,8 +3,8 @@ networking/
 sound/
 tests/
 raylib/
+obj/
 Serokuchi.c
 Makefile
-*.obj
 *.exe
 *.out
