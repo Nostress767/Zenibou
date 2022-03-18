@@ -1,37 +1,41 @@
 cc=cl.exe
-cflags=/c /F10000000 /nologo /W4 /MD /O2
+cflags=/c /utf-8 /F10000000 /nologo /W4 /MD /O2
 
-rayc=/FoExample.obj /I C:\Clibs\raylib-4.0.0_win32_msvc16\include /DRAYLIB
-raylib=/LIBPATH:C:\Clibs\raylib-4.0.0_win32_msvc16\lib raylib.lib user32.lib winmm.lib kernel32.lib shell32.lib gdi32.lib
+incray=/DRAYLIB /I.\raylib\include
+raylib=/LIBPATH:.\raylib\lib raylib.lib
 link=link
 lflags=/NOLOGO /SUBSYSTEM:console /ENTRY:mainCRTStartup
-libs=user32.lib gdi32.lib
 
 all: Example.exe
 
 Clock.obj:
 	$(cc) $(cflags) $*.c
 
-InputHandling.obj:
+Input.obj:
 	$(cc) $(cflags) $*.c
 
 Zenibou.obj:
 	$(cc) $(cflags) $*.c
 
+Zenibou:
+	$(cc) $(cflags) Zenibou.c
+
+rayZenibou:
+	$(cc) $(incray) $(cflags) Zenibou.c
+
 Example:
 	$(cc) $(cflags) Example.c
 
-Example.exe: Example Clock.obj InputHandling.obj Zenibou.obj
-	$(link) $(lflags) Example.obj Clock.obj InputHandling.obj Zenibou.obj $(libs)
+Example.exe: Example Clock.obj Input.obj Zenibou
+	$(link) $(lflags) Example.obj Clock.obj Input.obj Zenibou.obj
 
 clean: cleanbuild all
 
 raygame:
-	$(cc) $(cflags) $(rayc) Example.c
+	$(cc) $(cflags) Example.c
 
-ray: raygame
-	$(link) $(lflags) $(raylib) Example.obj
-
+ray: raygame Clock.obj Input.obj rayZenibou
+	$(link) $(lflags) $(raylib) Example.obj Zenibou.obj Clock.obj Input.obj
 
 cleanbuild:
 	del *.obj
