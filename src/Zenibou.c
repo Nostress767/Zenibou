@@ -129,6 +129,7 @@ void C(uint32_t color){
   #endif
 }
 
+//#include <stdio.h>
 void UpdateKeyState(uint32_t key, uint32_t bitfield){
 #ifdef RAYLIB
   (void)bitfield;
@@ -142,7 +143,7 @@ void UpdateKeyState(uint32_t key, uint32_t bitfield){
   uint32_t mapped_key = key;
   bool was_down = bitfield >> 30 & 1;
   bool is_down = bitfield >> 31 ^ 1;
-
+  //printf("key: %d %X\n", mapped_key, mapped_key);
   switch(key){
     // NOTE: if there is any need to differentiate 'A' from 'a' (or any other shift key) come back to this, but beware of compatibility with raylib
     case VK_SPACE:      mapped_key = kSpace;        break;
@@ -203,6 +204,7 @@ void UpdateKeyState(uint32_t key, uint32_t bitfield){
     case VK_MULTIPLY:   mapped_key = kMultiply;     break;
     case VK_SUBTRACT:   mapped_key = kSubtract;     break;
     case VK_ADD:        mapped_key = kAdd;          break;
+    // TODO: fix special VK_KEYS with left right variants
     case VK_LSHIFT:     mapped_key = kLeftShift;    break;
     case VK_LCONTROL:   mapped_key = kLeftCtrl;     break;
     case VK_LMENU:      mapped_key = kLeftAlt;      break;
@@ -212,6 +214,7 @@ void UpdateKeyState(uint32_t key, uint32_t bitfield){
     case VK_RMENU:      mapped_key = kRightAlt;     break;
     case VK_RWIN:       mapped_key = kRightSuper;   break;
   }
+  //printf("key: %d %X\n", mapped_key, mapped_key);
   Key[mapped_key].is_pressed  = (!was_down) & ( is_down);
   Key[mapped_key].is_held     = ( was_down) & ( is_down);
   Key[mapped_key].is_released = ( was_down) & (!is_down);
@@ -306,7 +309,7 @@ int32_t StartEngine(int32_t size_x, int32_t size_y, const char* name){
   Window.current_pos_x = (GetSystemMetrics(SM_CXSCREEN) / 2) - (size_x / 2);
   Window.current_pos_y = (GetSystemMetrics(SM_CYSCREEN) / 2) - (size_y / 2); 
 
-  Window.handle = CreateWindowEx(//WS_EX_OVERLAPPEDWINDOW,
+  Window.handle = CreateWindowEx(//WS_EX_OVERLAPPEDWINDOW, //(https://docs.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles)
                                  0, 
                                  class_name, title,
                                  WS_POPUP|WS_VISIBLE,
