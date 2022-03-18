@@ -1,6 +1,6 @@
 ﻿#ifndef _ZENIBOU_ZENIBOU_C_
 #define _ZENIBOU_ZENIBOU_C_
-#include "Zenibou.h"
+#include "../Zenibou.h"
 
 struct Window Window;
 

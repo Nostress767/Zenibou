@@ -9,19 +9,19 @@ lflags=/NOLOGO /SUBSYSTEM:console /ENTRY:mainCRTStartup
 all: Example.exe
 
 Clock.obj:
-	$(cc) $(cflags) $*.c
+	$(cc) $(cflags) src/$*.c
 
 Input.obj:
-	$(cc) $(cflags) $*.c
+	$(cc) $(cflags) src/$*.c
 
 Zenibou.obj:
-	$(cc) $(cflags) $*.c
+	$(cc) $(cflags) src/$*.c
 
 Zenibou:
-	$(cc) $(cflags) Zenibou.c
+	$(cc) $(cflags) src/Zenibou.c
 
 rayZenibou:
-	$(cc) $(incray) $(cflags) Zenibou.c
+	$(cc) $(incray) $(cflags) src/Zenibou.c
 
 Example:
 	$(cc) $(cflags) Example.c

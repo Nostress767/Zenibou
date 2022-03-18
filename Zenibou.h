@@ -3,8 +3,8 @@
 
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "gdi32.lib")
-#include "Clock.h"
-#include "Input.h"
+#include "include/Clock.h"
+#include "include/Input.h"
 #include <stdint.h>
 #include <stdbool.h>
 

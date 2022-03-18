@@ -1,7 +1,7 @@
 #ifndef _ZENIBOU_CLOCK_C_
 #define _ZENIBOU_CLOCK_C_
 
-#include "Clock.h"
+#include "../include/Clock.h"
 
 struct Clock Clock;
 
