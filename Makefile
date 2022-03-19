@@ -15,7 +15,7 @@ Example: $(deps)
 	Example.exe
 
 $(deps):
-	mkdir obj || ver > nul
+	@mkdir obj || ver > nul
 	cl $(cf) $(of) src\$(*B).c
 
 clean:
@@ -24,6 +24,7 @@ clean:
 	@del Example.html > nul 2> nul
 	@del Example.js > nul 2> nul
 	@del Example.wasm > nul 2> nul
+	@del Example > nul 2> nul
 
 ray: $(deps)
 	cl $(ecf) $(cf) /Foobj\Zenibou.o src\Zenibou.c
@@ -34,7 +35,7 @@ ray: $(deps)
 web:
 	setlocal
 	call C:\emsdk\emsdk_env.bat
-	emcc -o Example.html Example.c src/Zenibou.c src/Clock.c src/Input.c -Os -Wall ./raylib/lib/raylib.a -I. -I./include -I./raylib/include -L. -L./raylib/lib -s USE_GLFW=3 -DPLATFORM_WEB -DRAYLIB
+	emcc -o Example.html Example.c src/Zenibou.c src/Clock.c src/Input.c -Os -Wall ./raylib/lib/webraylib.a -I. -I./include -I./raylib/include -L. -L./raylib/lib -s USE_GLFW=3 -DPLATFORM_WEB -DRAYLIB
 	endlocal
 	start python -m http.server
 	explorer "http://localhost:8000/Example.html" || ver > nul
