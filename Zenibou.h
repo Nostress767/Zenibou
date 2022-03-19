@@ -12,7 +12,7 @@
 #define u32 uint32_t
 #define u64 uint64_t
 
-#ifndef PLATFORM_WEB
+#if !defined(PLATFORM_WEB) && defined(_WIN32)
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "gdi32.lib")
 #endif
@@ -23,7 +23,7 @@
 
 #ifdef RAYLIB
   #include "raylib.h"
-#ifndef PLATFORM_WEB
+#if !defined(PLATFORM_WEB) && defined(_WIN32)
   #pragma comment(lib, "winmm.lib")
   #pragma comment(lib, "kernel32.lib")
   #pragma comment(lib, "shell32.lib")
@@ -31,7 +31,7 @@
 // TODO: investigate whatever this is: (https://docs.microsoft.com/en-us/windows/win32/gdi/alpha-blending) (https://docs.microsoft.com/en-us/windows/win32/gdi/alpha-blending-a-bitmap)
   // TODO: investigate multithreading in C for message loop (https://docs.microsoft.com/en-us/cpp/parallel/multithreading-with-c-and-win32?view=msvc-170)
   // TODO: investigate tcc(tiny c compiler)'s compiling capabilities and figure out if could compile out of the box (downloading), copy from raylib command
-#else
+#elif _WIN32
   #define DPI_AWARENESS_CONTEXT_SYSTEM_AWARE ((DPI_AWARENESS_CONTEXT)-2)
   #define WIN32_LEAN_AND_MEAN
   #define UNICODE
@@ -53,7 +53,7 @@ struct Window{
     Texture2D bitmap_device_context;
     Vector2 origin;
     Rectangle screen;
-  #else
+  #elif _WIN32
     BITMAPINFO bitmap_info;
     HDC bitmap_device_context;
     MSG msg;

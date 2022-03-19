@@ -33,6 +33,14 @@ Now, just run:
 
     nmake web
 
+
+building the example on linux
+--------------
+Simply run:
+
+    make
+
+
 How this project came to be:
 
 [Win32-Drawing-Pixels](https://samulinatri.com/blog/win32-drawing-pixels/)

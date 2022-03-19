@@ -1,7 +1,7 @@
 #include "Zenibou.h"
 #include <stdio.h>
 #include "fonts/font5x6.h"
-//#include "sprites/test.h"
+#include "sprites/test.h"
 
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
@@ -43,11 +43,19 @@ void MainLoop(void){
       if(Key[i].is_released)
         printf("The released key is %03X ('%03d'). It was released on frame %llu(%lf)\n", i, i, Clock.frame, Clock.total_elapsed_time);}
     C(0xFFFF00FF);
-    D(100,100,0xFF0000FF);
-    snprintf(stringo,11,"FPS: %05d\n",Clock.frames_last_second);
+
+    for(i32 i = 0; i < (Window.height >> 3); i++)
+      for(i32 j = 0; j < (Window.width >> 3); j++){
+        // Color is defined as RGBA (just like raylib)
+        u32 color = (rand() & 0x0FF0) << 20 | (rand() & 0x0FF0) << 12 | (rand() & 0x0FF0) << 8 | 0xFF;
+        for(int32_t m = 0; m < 8; m++)
+          for(int32_t n = 0; n < 8; n++)
+            D((j << 3)+n, (i << 3)+m, color);}
+
+    snprintf(stringo,12,"FPS: %05d\n",Clock.frames_last_second);
     DrawString5x6(0,400, stringo, 0xFF0000FF, 4, 1, 5);
-    //DrawSpriteTest24x24(0, 360, "The quick brown fox jumps\n over the lazy dog.!@#$%^&*()<>", 1);
-    //DrawSpriteTest24x24(0, 160, "s s s", 5);
+    DrawSpriteTest24x24(0, 360, "The quick brown fox jumps\n over the lazy dog.!@#$%^&*()<>", 1);
+    DrawSpriteTest24x24(0, 160, "s s s", 5);
   EndFrame();
 }
 
