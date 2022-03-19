@@ -36,7 +36,11 @@ Now, just run:
 
 building the example on linux
 --------------
-Simply run:
+Make sure -lGL works/is installed (on ubuntu install libgl1-mesa-dev).
+
+Git clone this repository.
+
+Then, simply run:
 
     make
 
