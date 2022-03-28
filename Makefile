@@ -36,7 +36,6 @@ ray: $(deps)
 web:
 	setlocal
 	call C:\emsdk\emsdk_env.bat
-	emcc -o Example.html Example.c src/Zenibou.c src/Clock.c src/Input.c -Os -Wall ./raylib/lib/webraylib.a -I. -I./include -I./raylib/include -L. -L./raylib/lib -s USE_GLFW=3 -DPLATFORM_WEB -DRAYLIB
 	emcc -o Example.html Example.c src/Zenibou.c src/Clock.c src/Input.c -Os -Wall ./lib/webraylib.a -I. -I./src -I./include -L. -L./lib -s USE_GLFW=3 -DPLATFORM_WEB -DRAYLIB
 	endlocal
 	start python -m http.server
