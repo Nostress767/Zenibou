@@ -2,12 +2,11 @@ controller/
 include/
 lib/
 networking/
+obj/
 sound/
 tests/
-obj/
-tcc/
 Example.html
-Example.js
-Example.wasm
+*.js
+*.wasm
 *.exe
 *.out
