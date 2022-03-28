@@ -1,4 +1,6 @@
 controller/
+include/
+lib/
 networking/
 sound/
 tests/
@@ -9,9 +11,3 @@ Example.js
 Example.wasm
 *.exe
 *.out
-traylib.h
-raylib.dll
-raylibdll.lib
-traylib.a
-ttraylib.lib
-raylib.lib

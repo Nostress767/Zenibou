@@ -1,3 +1,4 @@
+# TODO: update this, based on Makefile
 cf=-c -finput-charset=UTF-8 -O2 -Iinclude -I.
 of=-o $@
 lf=-Lobj/

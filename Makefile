@@ -1,9 +1,13 @@
 cf=/c /utf-8 /F10000000 /nologo /W4 /MD /O2 /Iinclude /I.
+cf=/c /utf-8 /nologo /W4 /MD /O2 /Iinclude /I. /Isrc
 of=/Foobj\$(*B).o
 lf=/NOLOGO /SUBSYSTEM:console /ENTRY:mainCRTStartup /LIBPATH:obj
+lf=/NOLOGO /SUBSYSTEM:console /ENTRY:mainCRTStartup /LIBPATH:obj /LIBPATH:lib
 
 ecf=/DRAYLIB /I.\raylib\include
 elf=/LIBPATH:.\raylib\lib traylib.lib
+ecf=/DRAYLIB
+elf=raylib.lib
 
 deps=obj\Clock.o obj\Input.o
 edeps=obj\Clock.o obj\Input.o
@@ -39,3 +43,42 @@ web:
 	endlocal
 	start python -m http.server
 	explorer "http://localhost:8000/Example.html" || ver > nul
+raylib:
+	if not exist include mkdir include
+	if not exist lib mkdir lib
+	if exist include\raylib.h del include\raylib.h
+	if exist include\raymath.h del include\raymath.h
+	if exist include\rlgl.h del include\rlgl.h
+	if exist lib\raylib.lib del lib\raylib.lib
+	cd external
+	curl --output raylib-master.zip --url https://codeload.github.com/Nostress767/raylib/zip/refs/heads/master
+	tar -xf raylib-master.zip
+	cd raylib-master\src
+	copy raylib.h ..\..\..\include\raylib.h
+	copy raymath.h ..\..\..\include\raymath.h
+	copy rlgl.h ..\..\..\include\rlgl.h
+	nmake
+	copy raylib.lib ..\..\..\lib\raylib.lib
+	cd ..\..
+	del raylib-master.zip
+	RMDIR "raylib-master" /S /Q
+
+webraylib:
+	if not exist include mkdir include
+	if not exist lib mkdir lib
+	if exist include\raylib.h del include\raylib.h
+	if exist include\raymath.h del include\raymath.h
+	if exist include\rlgl.h del include\rlgl.h
+	if exist lib\webraylib.a del lib\webraylib.a
+	cd external
+	curl --output raylib-master.zip --url https://codeload.github.com/Nostress767/raylib/zip/refs/heads/master
+	tar -xf raylib-master.zip
+	cd raylib-master\src
+	copy raylib.h ..\..\..\include\raylib.h
+	copy raymath.h ..\..\..\include\raymath.h
+	copy rlgl.h ..\..\..\include\rlgl.h
+	nmake web
+	copy raylib.a ..\..\..\lib\webraylib.a
+	cd ..\..
+	del raylib-master.zip
+	RMDIR "raylib-master" /S /Q
