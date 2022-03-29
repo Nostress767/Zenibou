@@ -1,19 +1,30 @@
 # TODO: update this, based on Makefile
-cf=-c -finput-charset=UTF-8 -O2 -Iinclude -I.
+# TODO: fix linux targets (or rename them)
+cf=-c -finput-charset=UTF-8 -O2 -Iinclude -I. -Isrc
 of=-o $@
-lf=-Lobj/
+lf=-Lobj/ -lgdi32 -mconsole
 
 ecf=-DRAYLIB -Iraylib/include
-elf=-Lraylib/lib -l:raylib.a -lGL -lm -lpthread -ldl -lrt -lX11
+elf=-Llib -lraylib -lgdi32 -lWinmm
 
 deps=obj/Clock.o obj/Input.o
 edeps=obj/Clock.o obj/Input.o
 
 Example: $(deps)
+	gcc $(cf) -o obj/Zenibou.o src/Zenibou.c
+	gcc $(cf) -o obj/Example.o Example.c
+	gcc -o $@ obj/$@.o obj/Zenibou.o $(deps) $(lf) 
+
+ray: $(deps)
 	gcc $(ecf) $(cf) -o obj/Zenibou.o src/Zenibou.c
 	gcc $(cf) -o obj/Example.o Example.c
-	gcc -Wl,-z,stack-size=10000000 -o $@ obj/$@.o obj/Zenibou.o $(deps) $(lf) $(elf)
-#	./Example
+	gcc -o Example obj/Example.o obj/Zenibou.o $(deps) $(lf) $(elf)
+
+linux: $(deps)
+#Example: $(deps)
+	gcc $(ecf) $(cf) -o obj/Zenibou.o src/Zenibou.c
+	gcc $(cf) -o obj/Example.o Example.c
+	gcc -o $@ obj/$@.o obj/Zenibou.o $(deps) $(lf) $(elf)
 
 $(deps):
 	mkdir -p obj
@@ -26,6 +37,23 @@ clean:
 	$(RM) Example.js
 	$(RM) Example.wasm
 	$(RM) Example
+
+raylib:
+	mkdir -p include
+	mkdir -p lib
+	@[ -f ./include/raylib.h ] && rm ./include/raylib.h || true
+	@[ -f ./include/raymath.h ] && rm ./include/raymath.h || true
+	@[ -f ./include/rlgl.h ] && rm ./include/rlgl.h || true
+	@[ -f ./lib/raylib.lib ] && rm ./lib/raylib.lib || true
+	@[ -f ./external/raylib-master.zip ] || curl -L --output external/raylib-master.zip --url https://github.com/Nostress767/raylib/archive/refs/heads/master.zip
+	@[ -f ./external/raylib-master/LICENSE ] || unzip external/raylib-master.zip -d external/
+	cp external/raylib-master/src/raylib.h include/raylib.h
+	cp external/raylib-master/src/raymath.h include/raymath.h
+	cp external/raylib-master/src/rlgl.h include/rlgl.h
+	cd external/raylib-master/src && make
+	cp external/raylib-master/src/libraylib.a lib/raylib.lib
+	@[ -f ./external/raylib-master.zip ] && rm external/raylib-master.zip
+	@[ -f ./external/raylib-master/LICENSE ] && rm -rf external/raylib-master
 
 #web:
 #	setlocal

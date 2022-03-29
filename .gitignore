@@ -5,6 +5,7 @@ networking/
 obj/
 sound/
 tests/
+w64devkit/
 Example.html
 *.js
 *.wasm
