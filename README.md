@@ -47,18 +47,25 @@ And then:
     nmake web
 
 
-#######building the example on linux(NEEDS TO BE FIXED ASAP)
-#######--------------
-#######Make sure -lGL works/is installed (on ubuntu install libgl1-mesa-dev).
-#######
-#######Git clone this repository.
-#######
-#######Then, simply run:
-#######
-#######    make
-#######
+building the example on GNU/Linux (untested)
+--------------
+Make sure -lGL works/is installed (on ubuntu install libgl1-mesa-dev).
+
+Git clone this repository (or download it) and build raylib, like this:
+
+    make linuxraylib
+
+Then, build the example:
+
+    make linux
+
+Now just run it:
+
+    ./Example
+
 
 How this project came to be/inspirations/copy pastes:
+--------------
 
 [Win32-Drawing-Pixels](https://samulinatri.com/blog/win32-drawing-pixels/)
 

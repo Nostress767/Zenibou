@@ -7,6 +7,7 @@ sound/
 tests/
 w64devkit/
 Example.html
+Example
 *.js
 *.wasm
 *.exe
