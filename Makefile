@@ -81,7 +81,7 @@ raylib:
 	if exist include\rlgl.h del include\rlgl.h
 	if exist lib\raylib.lib del lib\raylib.lib
 	cd external
-	curl --output raylib-master.zip --url https://codeload.github.com/Nostress767/raylib/zip/refs/heads/master
+	curl -L --output raylib-master.zip --url https://github.com/Nostress767/raylib/archive/refs/heads/master.zip
 	tar -xf raylib-master.zip
 	cd raylib-master\src
 	copy raylib.h ..\..\..\include\raylib.h
@@ -101,7 +101,7 @@ webraylib:
 	if exist include\rlgl.h del include\rlgl.h
 	if exist lib\webraylib.a del lib\webraylib.a
 	cd external
-	curl --output raylib-master.zip --url https://codeload.github.com/Nostress767/raylib/zip/refs/heads/master
+	curl -L --output raylib-master.zip --url https://github.com/Nostress767/raylib/archive/refs/heads/master.zip
 	tar -xf raylib-master.zip
 	cd raylib-master\src
 	copy raylib.h ..\..\..\include\raylib.h
