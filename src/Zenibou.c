@@ -298,7 +298,12 @@ int32_t StartEngine(int32_t size_x, int32_t size_y, const char* name){
 #else  
   wchar_t title[256];
   MultiByteToWideChar(CP_UTF8,0,name,-1,title,MultiByteToWideChar(CP_UTF8,0,name,-1,NULL,0));
-  SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
+
+  SetProcessDPIAware();
+  //PGNSI pGNSI = (PGNSI)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetProcessDpiAwarenessContext");
+  //if(pGNSI != NULL)
+  //  pGNSI(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
+  //SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
   
   HINSTANCE instance = GetModuleHandle(0);
 

@@ -31,13 +31,14 @@
 // TODO: investigate whatever this is: (https://docs.microsoft.com/en-us/windows/win32/gdi/alpha-blending) (https://docs.microsoft.com/en-us/windows/win32/gdi/alpha-blending-a-bitmap)
   // TODO: investigate multithreading in C for message loop (https://docs.microsoft.com/en-us/cpp/parallel/multithreading-with-c-and-win32?view=msvc-170)
   // TODO: investigate tcc(tiny c compiler)'s compiling capabilities and figure out if could compile out of the box (downloading), copy from raylib command
-#elif _WIN32
+#else
   #define DPI_AWARENESS_CONTEXT_SYSTEM_AWARE ((DPI_AWARENESS_CONTEXT)-2)
   #define WIN32_LEAN_AND_MEAN
   #define UNICODE
   #define _CRT_SECURE_NO_WARNINGS
   #include <windows.h>
   #include <windowsx.h>
+  //typedef void (WINAPI *PGNSI)(DPI_AWARENESS_CONTEXT);
   LRESULT CALLBACK WindowProcedure(HWND window, UINT message, WPARAM w_param, LPARAM l_param);
 #endif
 
