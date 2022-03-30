@@ -47,7 +47,7 @@ And then:
     nmake web
 
 
-building the example on GNU/Linux (untested)
+building the example on GNU/Linux
 --------------
 Make sure -lGL works/is installed (on ubuntu install libgl1-mesa-dev).
 

@@ -3,7 +3,7 @@
 cf=-c -finput-charset=UTF-8 -O2 -Iinclude -I. -Isrc
 of=-o $@
 lf=-Lobj/ -lgdi32 -mconsole
-linuxlf=-Lobj/ -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+linuxlf=-Lobj/ -Llib -l:raylib.a -lGL -lm -lpthread -ldl -lrt -lX11
 
 ecf=-DRAYLIB -Iraylib/include
 elf=-Llib -lraylib -lgdi32 -lWinmm
