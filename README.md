@@ -10,7 +10,7 @@ On the new terminal, simply run:
 
 Now just run the example (./Example.exe).
 
-If you with to compile with raylib as backend, you need to build it from source first.
+If you wish to compile with raylib as backend, you need to build it from source first.
 
 building raylib from source on windows with MinGW
 --------------
