@@ -2,7 +2,7 @@ This is a simple engine for starting a window, capturing inputs and drawing pixe
 
 building the example from source on windows with MinGW
 --------------
-Easy, just run (double click) install.bat, then run open_venv.bat and a terminal (it's actually [Christopher Wellons's w64devkit](https://github.com/skeeto/w64devkit)) should pop up (on first execution takes anywhere between 10 seconds to 1 minute depending on various conditions and requires internet access).
+Easy, just run (double click) open_venv.bat and a terminal (it's actually [Christopher Wellons's w64devkit](https://github.com/skeeto/w64devkit)) should pop up (on first execution takes anywhere between 10 seconds to 1 minute depending on various conditions and requires internet access).
 
 On the new terminal, simply run:
 
@@ -23,29 +23,6 @@ This should build raylib.lib and place it on lib/, now simply run:
     make ray
 
 Proceed as usual (./Example.exe).
-
-building the example from source on windows with MSVC
---------------
-Run install_msvc.bat(UNTESTED) and wait for it to finish. Then run open_venv_msvc.bat, this should open the Visual Studio Developer Command Prompt. Now run:
-
-    nmake
-
-To use raylib, compile it first with:
-
-    nmake raylib
-
-And then:
-
-    nmake ray
-
-If you want to compile for we, first get emscripten SDK (you may follow [raylib's guide](https://github.com/raysan5/raylib/wiki/Working-for-Web-(HTML5))), and python to be able to serve http on localhost. After that, build webraylib.a using:
-
-    nmake webraylib
-
-And then:
-
-    nmake web
-
 
 building the example on GNU/Linux
 --------------
