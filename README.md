@@ -1,4 +1,4 @@
-This is a simple engine for starting a window, capturing inputs and drawing pixels to the screen. At the moment it can only run on Microsoft Windows.
+This is a single include file for starting a window, capturing inputs and drawing pixels to the screen. At the moment it can only run on Microsoft Windows.
 
 building the example from source on windows with MinGW
 --------------
