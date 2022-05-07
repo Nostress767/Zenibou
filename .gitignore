@@ -2,13 +2,12 @@ controller/
 include/
 lib/
 networking/
-obj/
 sound/
 tests/
 w64devkit/
 Example.html
 Example
-*.js
-*.wasm
-*.exe
-*.out
+Example.wasm
+Example.js
+Example.exe
+Example.obj
