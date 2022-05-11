@@ -480,6 +480,58 @@ int32_t StartEngine(int32_t size_x, int32_t size_y, const char* name){
 #endif
 }
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "external/stb_image.h"
+
+typedef struct Sprite{
+  int32_t x, y;
+  int32_t width, height, channels;
+  uint8_t** data;
+} Sprite;
+
+void DrawSprite(Sprite* spr);
+Sprite AllocSprite(const uint8_t start[], int32_t len, int32_t x, int32_t y);
+void FreeSprite(Sprite* spr);
+
+void DrawSprite(Sprite* spr){
+  for(int32_t i = 0; i < spr->height; i++)
+    for(int32_t j = 0; j < spr->width; j++)
+      D(spr->x + j, spr->y + i, spr->data[i][j*4] << 24 | spr->data[i][j*4+1] << 16 | (spr->data[i][j*4+2]) << 8 | spr->data[i][j*4+3]);
+}
+
+Sprite AllocSprite(const uint8_t start[], int32_t len, int32_t x, int32_t y){
+  Sprite spr = { x, y, };
+  uint8_t* reverse_rows = stbi_load_from_memory(start, len, &spr.width, &spr.height, &spr.channels, 4);
+  // Reverse row order (from "left to right, top to bottom" to "left to right, bottom to top")
+  spr.data = malloc(sizeof(uint8_t*) * spr.height);
+  for(int i = 0; i < spr.height; i++){
+    spr.data[i] = malloc(4 * spr.width);
+    memcpy(spr.data[i], reverse_rows + (spr.height - 1 - i) * 4 * spr.width, 4 * spr.width);
+  }
+
+  free(reverse_rows);
+  return spr;
+}
+
+void FreeSprite(Sprite* spr){
+  Sprite tmp = {0};
+  for(int i = 0; i < spr->height; i++)
+    free(spr->data[i]);
+  free(spr->data);
+  *spr = tmp;
+}
+
+#ifndef RAYLIB
+#define IncludeMedia(x,type) extern unsigned char binary_##x##_##type##_start[];extern unsigned char binary_##x##_##type##_end[];
+#define MediaStart(x,type) binary_##x##_##type##_start
+#define MediaEnd(x,type) binary_##x##_##type##_end
+#else
+#define IncludeMedia(x,type) extern unsigned char _binary_##x##_##type##_start[];extern unsigned char _binary_##x##_##type##_end[];
+#define MediaStart(x,type) _binary_##x##_##type##_start
+#define MediaEnd(x,type) _binary_##x##_##type##_end
+#endif
+#define MediaSize(x,type) MediaEnd(x,type)-MediaStart(x,type)
+
 // NOTE: this was used for checking high-DPI settings
 ////#pragma comment(lib, "shcore.lib")
 ////#include <shellscalingapi.h>
