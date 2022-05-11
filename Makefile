@@ -5,8 +5,10 @@ linuxlf=-Lobj/ -Llib -l:raylib.a -lGL -lm -lpthread -ldl -lrt -lX11
 ecf=-DRAYLIB -Iinclude
 elf=-Llib -lraylib -lgdi32 -lWinmm
 
+resources=
+
 Example:
-	gcc $(cf) -o $@ $@.c $(lf)
+	gcc $(cf) -o $@ $@.c $(lf) $(resources)
 
 ray: $(deps)
 	gcc $(cf) -o Example Example.c $(ecf) $(lf) $(elf)
