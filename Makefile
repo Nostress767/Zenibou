@@ -11,10 +11,10 @@ Example:
 	gcc $(cf) -o $@ $@.c $(lf) $(resources)
 
 ray: $(deps)
-	gcc $(cf) -o Example Example.c $(ecf) $(lf) $(elf)
+	gcc $(cf) $(ecf) -o Example Example.c $(lf) $(resources) $(elf)
 
 linux: $(deps)
-	gcc $(cf) -o Example Example.c $(ecf) $(linuxlf)
+	gcc $(cf) -o Example Example.c $(ecf) $(linuxlf) $(resources)
 
 clean:
 	$(RM) Example.exe
