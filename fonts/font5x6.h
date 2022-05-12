@@ -1,6 +1,8 @@
 #ifndef _SEROKUCHI_FONT5X6_H_
 #define _SEROKUCHI_FONT5X6_H_
 
+// NOTE: fonts should probably just be special PNG sprites loaded on startup
+
 #include <stdint.h>
 #include <string.h>
 

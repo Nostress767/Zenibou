@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "fonts/font5x6.h"
-//#include "sprites/test.h"
 
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
@@ -51,24 +50,6 @@ void MainLoop(void){
 
     snprintf(stringo,12,"FPS: %05d\n",Clock.frames_last_second);
     DrawString5x6(0,400, stringo, 0xFF0000FF, 4, 1, 5);
-    //DrawSpriteTest24x24(0, 360, "The quick brown fox jumps\n over the lazy dog.!@#$%^&*()<>", 1);
-    //DrawSpriteTest24x24(0, 160, "s s s", 5);
   EndFrame();
 }
 
-//#include <stdio.h>
-//#include <stdlib.h>
-//#include "fonts/font5x6.h"
-//#include "fonts/font5x5.h"
-//#include "sprites/test.h"
-
-// TODO: continue investigating tcc and platform_web
-// TODO: Fix sprite and font generating scripts (change DrawPixel to D, and check if fail or no fail)
-
-  //char stringo[12] = {0};
-
-    //DrawString5x5(0,200,"The quick brown fox jumps\n over the lazy dog.!@#$%^\n&*()<>",0x00FFFFFF, 4, 1, 5);
-    //snprintf(stringo,11,"FPS: %05d\n",Clock.frames_last_second);
-    //DrawSpriteTest24x24(0, 360, "The quick brown fox jumps\n over the lazy dog.!@#$%^&*()<>", 1);
-    //DrawString5x6(0,100, "The quick brown fox jumps\n over the lazy dog.!@#$%^\n&*()<>",0xFF0000FF, 4, 1, 5);
-    //DrawString5x6(0,200, stringo, 0xFF0000FF, 4, 1, 5);
