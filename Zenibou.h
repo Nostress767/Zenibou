@@ -1,6 +1,35 @@
 ﻿#ifndef _ZENIBOU_ZENIBOU_H_
 #define _ZENIBOU_ZENIBOU_H_
 
+#include <time.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <math.h>
+#include <stdbool.h>
+#if !defined(PLATFORM_WEB) && defined(_WIN32)
+#pragma comment(lib, "user32.lib")
+#pragma comment(lib, "gdi32.lib")
+#endif
+#ifdef RAYLIB
+  #include "raylib.h"
+#if !defined(PLATFORM_WEB) && defined(_WIN32)
+  #pragma comment(lib, "winmm.lib")
+  #pragma comment(lib, "kernel32.lib")
+  #pragma comment(lib, "shell32.lib")
+#endif
+// TODO: investigate whatever this is: (https://docs.microsoft.com/en-us/windows/win32/gdi/alpha-blending) (https://docs.microsoft.com/en-us/windows/win32/gdi/alpha-blending-a-bitmap)
+  // TODO: investigate multithreading in C for message loop (https://docs.microsoft.com/en-us/cpp/parallel/multithreading-with-c-and-win32?view=msvc-170)
+  // TODO: investigate tcc(tiny c compiler)'s compiling capabilities and figure out if could compile out of the box (downloading), copy from raylib command
+#else
+  #define DPI_AWARENESS_CONTEXT_SYSTEM_AWARE ((DPI_AWARENESS_CONTEXT)-2)
+  #define WIN32_LEAN_AND_MEAN
+  #define UNICODE
+  #define _CRT_SECURE_NO_WARNINGS
+  #include <windows.h>
+  #include <windowsx.h>
+  //typedef void (WINAPI *PGNSI)(DPI_AWARENESS_CONTEXT);
+  LRESULT CALLBACK WindowProcedure(HWND window, UINT message, WPARAM w_param, LPARAM l_param);
+#endif
 // TODO: clean up this file
 
 #define f32 float
@@ -14,58 +43,37 @@
 #define u32 uint32_t
 #define u64 uint64_t
 
-#if !defined(PLATFORM_WEB) && defined(_WIN32)
-#pragma comment(lib, "user32.lib")
-#pragma comment(lib, "gdi32.lib")
+#ifndef RAYLIB
+#define IncludeMedia(x,type) extern unsigned char binary_##x##_##type##_start[];extern unsigned char binary_##x##_##type##_end[];
+#define MediaStart(x,type) binary_##x##_##type##_start
+#define MediaEnd(x,type) binary_##x##_##type##_end
+#else
+#define IncludeMedia(x,type) extern unsigned char _binary_##x##_##type##_start[];extern unsigned char _binary_##x##_##type##_end[];
+#define MediaStart(x,type) _binary_##x##_##type##_start
+#define MediaEnd(x,type) _binary_##x##_##type##_end
 #endif
-#include <time.h>
-#include <stdint.h>
+#define MediaSize(x,type) MediaEnd(x,type)-MediaStart(x,type)
+
+// PNG-type sprite
+typedef struct Sprite{
+  i32 x, y;
+  i32 width, height, channels;
+  u8** data;
+} Sprite;
 
 void InitializeClock(void);
 void Tick(void);
-
-struct Clock{
-  double last_second_elapsed_time, last_frame_elapsed_time, total_elapsed_time;
-  uint64_t frame;
-  int32_t frames_last_second;
-  clock_t time1, time2;};
-
-struct Clock Clock;
-
-void InitializeClock(void){
-  Clock.last_second_elapsed_time = 0;
-  Clock.last_frame_elapsed_time = 0;
-  Clock.total_elapsed_time = 0;
-  Clock.frame = 0;
-  Clock.frames_last_second = 0;
-  Clock.time1 = clock();
-  Clock.time2 = clock();}
-
-void Tick(void){
-  Clock.time2 = clock();
-  Clock.last_frame_elapsed_time = ((double)(Clock.time2 - Clock.time1)) / CLOCKS_PER_SEC;
-  Clock.time1 = Clock.time2;
-  Clock.last_second_elapsed_time += Clock.last_frame_elapsed_time;
-  Clock.total_elapsed_time += Clock.last_frame_elapsed_time;
-  Clock.frame++;
-  if(Clock.last_second_elapsed_time > 1.){
-    Clock.frames_last_second = (int32_t) Clock.frame;
-    Clock.last_second_elapsed_time = 0.;
-    Clock.frame = 0;}}
-#include <stdint.h>
-#include <stdbool.h>
-
-struct Mouse{
-  int16_t x, y;
-  bool left_pressed, middle_pressed, right_pressed;
-  bool left_held, middle_held, right_held;
-  bool left_released, middle_released, right_released;
-  bool is_focused;
-};
-
-struct Key{
-  bool is_pressed, is_held, is_released;
-};
+void BeginFrame(void);
+void EndFrame(void);
+void D(i32 x, i32 y, u32 color);
+void C(u32 color);
+i32 StartEngine(i32 size_x, i32 size_y, const char* name);
+i32 SetWindowSizes(i32 size_x, i32 size_y);
+void UpdateKeyState(u32 key, u32 bitfield);
+void DrawSprite(Sprite* spr);
+void FreeSprite(Sprite* spr);
+Sprite AllocSprite(const u8 start[], i32 len, i32 x, i32 y);
+void ToggleFullscreen(void);
 
 enum MouseButtons {
   kMouseLeft = 0, kMouseRight = 1, kMouseMiddle = 2
@@ -87,98 +95,77 @@ enum OtherKeys {
   kLeftShift = 340, kLeftCtrl, kLeftAlt, kLeftSuper, kRightShift = 340, kRightCtrl, kRightAlt, kRightSuper
 };
 
-struct Mouse Mouse;
+struct Mouse{
+  i16 x, y;
+  bool left_pressed, middle_pressed, right_pressed;
+  bool left_held, middle_held, right_held;
+  bool left_released, middle_released, right_released;
+  bool is_focused;
+} Mouse;
 
-struct Key Key[512] = {0};
-#include <stdint.h>
-#include <stdbool.h>
+struct Key{
+  bool is_pressed, is_held, is_released;
+} Key[512] = {0};
 
-#ifdef RAYLIB
-  #include "raylib.h"
-#if !defined(PLATFORM_WEB) && defined(_WIN32)
-  #pragma comment(lib, "winmm.lib")
-  #pragma comment(lib, "kernel32.lib")
-  #pragma comment(lib, "shell32.lib")
-#endif
-// TODO: investigate whatever this is: (https://docs.microsoft.com/en-us/windows/win32/gdi/alpha-blending) (https://docs.microsoft.com/en-us/windows/win32/gdi/alpha-blending-a-bitmap)
-  // TODO: investigate multithreading in C for message loop (https://docs.microsoft.com/en-us/cpp/parallel/multithreading-with-c-and-win32?view=msvc-170)
-  // TODO: investigate tcc(tiny c compiler)'s compiling capabilities and figure out if could compile out of the box (downloading), copy from raylib command
-#else
-  #define DPI_AWARENESS_CONTEXT_SYSTEM_AWARE ((DPI_AWARENESS_CONTEXT)-2)
-  #define WIN32_LEAN_AND_MEAN
-  #define UNICODE
-  #define _CRT_SECURE_NO_WARNINGS
-  #include <windows.h>
-  #include <windowsx.h>
-  //typedef void (WINAPI *PGNSI)(DPI_AWARENESS_CONTEXT);
-  LRESULT CALLBACK WindowProcedure(HWND window, UINT message, WPARAM w_param, LPARAM l_param);
-#endif
+struct Clock{
+  f64 last_second_elapsed_time, last_frame_elapsed_time, total_elapsed_time;
+  u64 frame;
+  i32 frames_last_second;
+  clock_t time1, time2;
+} Clock;
 
 struct Window{
-  // TODO: maybe remove these global variables? Maybe not also? IDK, whatever is easier
-  int32_t width, height;
-  int32_t current_pos_x, current_pos_y;
+  // NOTE: maybe remove these global variables? Maybe not also? IDK, whatever is easier
+  i32 width, height;
+  i32 starting_width, starting_height;
+  i32 offset_x, offset_y;
+  i32 current_pos_x, current_pos_y;
+  f64 aspect_ratio;
   void* bitmap_memory;
   bool is_running;
   bool is_focused;
+  bool is_fullscreen;
   #ifdef RAYLIB
     Image bitmap_info;
     Texture2D bitmap_device_context;
     Vector2 origin;
     Rectangle screen;
+    Rectangle starting_screen;
   #elif _WIN32
     BITMAPINFO bitmap_info;
     HDC bitmap_device_context;
     MSG msg;
     HWND handle;
   #endif
-};
+} Window;
 
-void BeginFrame(void);
-void EndFrame(void);
-void D(int32_t x, int32_t y, uint32_t color);
-void C(uint32_t color);
-int32_t StartEngine(int32_t size_x, int32_t size_y, const char* name);
-int32_t SetWindowSizes(int32_t size_x, int32_t size_y);
-void UpdateKeyState(uint32_t key, uint32_t bitfield);
+void InitializeClock(void){
+  Clock.last_second_elapsed_time = 0;
+  Clock.last_frame_elapsed_time = 0;
+  Clock.total_elapsed_time = 0;
+  Clock.frame = 0;
+  Clock.frames_last_second = 0;
+  Clock.time1 = clock();
+  Clock.time2 = clock();
+}
 
-struct Window Window;
-
-int32_t SetWindowSizes(int32_t size_x, int32_t size_y){
-#ifdef RAYLIB
-  UnloadTexture(Window.bitmap_device_context);
-  UnloadImage(Window.bitmap_info);
-  MemFree(Window.bitmap_memory);
-  Window.bitmap_memory = MemAlloc(size_x * size_y * 4);
-  Window.bitmap_info = GenImageColor(size_x,size_y,BLACK);
-  Window.bitmap_device_context = LoadTextureFromImage(Window.bitmap_info);
-  Window.width = size_x;
-  Window.height = size_y;
-  // NOTE: another rectangle (source and dest) could be used for scaling the texture
-  Window.screen = (Rectangle){0.f, 0.f, (float) Window.width, (float) Window.height};
-  int monitor = GetCurrentMonitor();
-  Window.current_pos_x = (GetMonitorWidth(monitor) / 2) - (size_x / 2);
-  Window.current_pos_y = (GetMonitorHeight(monitor) / 2) - (size_y / 2);
-  SetWindowSize(size_x,size_y);
-  SetWindowPosition(Window.current_pos_x, Window.current_pos_y);
-#else
-  VirtualFree(Window.bitmap_memory, 0, MEM_RELEASE);
-  Window.bitmap_memory = VirtualAlloc(0,size_x * size_y * 4,MEM_RESERVE|MEM_COMMIT,PAGE_READWRITE);
-
-  ReleaseDC(Window.handle, Window.bitmap_device_context);
-  Window.bitmap_info = (BITMAPINFO){ .bmiHeader = {.biSize = sizeof(Window.bitmap_info.bmiHeader), .biWidth = size_x,
-                                     .biHeight = size_y, .biPlanes = 1, .biBitCount = 32, .biCompression = BI_RGB}};
-  Window.bitmap_device_context = GetDC(Window.handle);
-  
-  Window.current_pos_x = (GetSystemMetrics(SM_CXSCREEN) / 2) - (size_x / 2);
-  Window.current_pos_y = (GetSystemMetrics(SM_CYSCREEN) / 2) - (size_y / 2);
-  MoveWindow(Window.handle, Window.current_pos_x, Window.current_pos_y, size_x, size_y, true);
-#endif
-  return 0;}
+void Tick(void){
+  Clock.time2 = clock();
+  Clock.last_frame_elapsed_time = ((f64)(Clock.time2 - Clock.time1)) / CLOCKS_PER_SEC;
+  Clock.time1 = Clock.time2;
+  Clock.last_second_elapsed_time += Clock.last_frame_elapsed_time;
+  Clock.total_elapsed_time += Clock.last_frame_elapsed_time;
+  Clock.frame++;
+  if(Clock.last_second_elapsed_time > 1.){
+    Clock.frames_last_second = (i32) Clock.frame;
+    Clock.last_second_elapsed_time = 0.;
+    Clock.frame = 0;
+  }
+}
 
 void BeginFrame(void){
 #ifdef RAYLIB
-  int32_t key;
+  i32 key;
   while((key = GetKeyPressed()) != 0)
     UpdateKeyState(key, 0);
 
@@ -197,15 +184,17 @@ void BeginFrame(void){
 #else
   while(PeekMessage(&Window.msg, NULL, 0, 0, PM_REMOVE)){
     TranslateMessage(&Window.msg);
-    DispatchMessage(&Window.msg);}
+    DispatchMessage(&Window.msg);
+  }
 #endif
 }
 
 void EndFrame(void){
 #ifdef RAYLIB
+  Window.screen = (Rectangle){0.f, 0.f, (float) GetScreenWidth(), (float) GetScreenHeight()};
   UpdateTexture(Window.bitmap_device_context, Window.bitmap_memory);
   BeginDrawing();
-  DrawTexturePro(Window.bitmap_device_context, Window.screen, Window.screen, Window.origin, 0.f, WHITE);
+  DrawTexturePro(Window.bitmap_device_context, Window.starting_screen, Window.screen, Window.origin, 0.f, WHITE);
   EndDrawing();
 #ifndef PLATFORM_WEB
   if(!Window.is_running)
@@ -215,17 +204,18 @@ void EndFrame(void){
     CloseWindow();
 #endif
 #else
+  //printf("Crash, why? %d %d\n", Window.offset_x, Window.offset_y);
   StretchDIBits(Window.bitmap_device_context,
+                Window.offset_x, Window.offset_y,
+                Window.width, Window.height,
                 0,0,
-                Window.width,Window.height,
-                0,0,
-                Window.width,Window.height,
+                Window.starting_width, Window.starting_height,
                 Window.bitmap_memory,
                 &Window.bitmap_info,
                 DIB_RGB_COLORS,
-                SRCCOPY);
+                SRCCOPY);//SRCCOPY);
 #endif
-  for(int32_t i = 0; i < 512; i++){
+  for(i32 i = 0; i < 512; i++){
     if(Key[i].is_pressed){
       Key[i].is_pressed = false;
       Key[i].is_held = true;
@@ -244,35 +234,135 @@ void EndFrame(void){
   Tick();
 }
 
-void D(int32_t x, int32_t y, uint32_t color){
+void D(i32 x, i32 y, u32 color){
+#ifdef RAYLIB
   if(x < 0 || y < 0 || x >= Window.width || y >= Window.height)
+#else
+  if(x < 0 || y < 0 || x >= Window.starting_width || y >= Window.starting_height)
+#endif
     return;
-  uint32_t* pixel = (uint32_t *)Window.bitmap_memory;
+  u32* pixel = (u32*)Window.bitmap_memory;
 #ifdef RAYLIB
   // Invert y, because of OpenGL reasons
   pixel += (Window.height - y - 1) * Window.width + x;
   // Gets optimized to a single bswap instruction, great!
   *pixel = (color >> 24) | ((color >> 8) & 0xFF00) | ((color << 8) & 0xFF0000) | (color << 24);
 #else
-  pixel += y * Window.width + x;
-  // On zenibou its ARGB
+  pixel += y * Window.starting_width + x;
+  // On windows its ARGB
   // But we default RGBA, so roll over byte
   *pixel = (color << 24) | (color >> 8);
 #endif
 }
 
-void C(uint32_t color){
-  uint32_t *pixel = (uint32_t *)Window.bitmap_memory;
-  for(int i = 0; i < Window.width * Window.height; ++i)
-  #ifdef RAYLIB
-    *pixel++ = (color >> 24) | ((color >> 8) & 0xFF00) | ((color << 8) & 0xFF0000) | (color << 24);
-  #else
-    *pixel++ = (color << 24) | (color >> 8);
-  #endif
+void C(u32 color){
+#ifdef RAYLIB
+  for(i32 i = 0; i < Window.width; ++i)
+    for(i32 j = 0; j < Window.height; ++j)
+#else
+  for(i32 i = 0; i < Window.starting_width; ++i)
+    for(i32 j = 0; j < Window.starting_height; ++j)
+#endif
+      D(i, j, color);
 }
 
-//#include <stdio.h>
-void UpdateKeyState(uint32_t key, uint32_t bitfield){
+i32 StartEngine(i32 size_x, i32 size_y, const char* name){
+#ifdef RAYLIB
+  SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+  InitWindow(size_x,size_y,name);
+  //HideCursor();
+  //SetWindowState(FLAG_WINDOW_UNDECORATED);
+  Window.bitmap_memory = MemAlloc(size_x * size_y * 4);
+  Window.bitmap_info = GenImageColor(size_x,size_y,BLACK);
+  Window.bitmap_device_context = LoadTextureFromImage(Window.bitmap_info);
+  Window.width = size_x;
+  Window.height = size_y;
+  Window.is_running = true;
+  Window.origin = (Vector2){0};
+  Window.screen = (Rectangle){0.f, 0.f, (float) Window.width, (float) Window.height};
+  Window.starting_screen = (Rectangle){0.f, 0.f, (float) Window.width, (float) Window.height};
+  InitializeClock();
+  return 0;
+#else  
+  wchar_t title[256];
+  MultiByteToWideChar(CP_UTF8,0,name,-1,title,MultiByteToWideChar(CP_UTF8,0,name,-1,NULL,0));
+
+  SetProcessDPIAware();
+  //PGNSI pGNSI = (PGNSI)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetProcessDpiAwarenessContext");
+  //if(pGNSI != NULL)
+  //  pGNSI(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
+  //SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
+  
+  HINSTANCE instance = GetModuleHandle(0);
+
+  const wchar_t class_name[] = L"Zenibou";
+  WNDCLASSW window_class = {.lpfnWndProc = WindowProcedure,.hInstance = instance,.style = CS_HREDRAW | CS_VREDRAW,
+                            .lpszClassName = class_name,.hCursor = LoadCursor(0, IDC_ARROW),};
+  //ShowCursor(false);
+
+  RegisterClass(&window_class);
+  
+  Window.current_pos_x = (GetSystemMetrics(SM_CXSCREEN) / 2) - (size_x / 2);
+  Window.current_pos_y = (GetSystemMetrics(SM_CYSCREEN) / 2) - (size_y / 2); 
+
+  RECT rect = { 0, 0, size_x, size_y };
+  AdjustWindowRectEx(&rect, WS_CAPTION | WS_VISIBLE | WS_SYSMENU | WS_MAXIMIZEBOX | WS_MINIMIZEBOX, false, 0);
+
+  Window.offset_x = 0;
+  Window.offset_y = 0;
+  Window.width = size_x;
+  Window.height = size_y;
+  Window.aspect_ratio = (f64)size_x / size_y;
+  Window.starting_width = size_x;
+  Window.starting_height = size_y;
+
+  Window.handle = CreateWindowEx(//WS_EX_OVERLAPPEDWINDOW, //(https://docs.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles)
+                                 0, 
+                                 class_name, title,
+                                 WS_CAPTION | WS_VISIBLE | WS_SYSMENU | WS_MAXIMIZEBOX | WS_MINIMIZEBOX,
+                                 //WS_POPUP|WS_VISIBLE,
+                                 //|WS_VISIBLE,
+                                 Window.current_pos_x, // start_x
+                                 Window.current_pos_y, // start_y
+                                 rect.right - rect.left, // size_x
+                                 rect.bottom - rect.top, // size_y
+                                 0, 0, instance, 0);
+
+  Window.is_running = true;
+  InitializeClock();
+  
+  Window.is_fullscreen = false;
+  Window.bitmap_memory = VirtualAlloc(0,Window.width * Window.height * 4,MEM_RESERVE|MEM_COMMIT,PAGE_READWRITE);
+  Window.bitmap_info = (BITMAPINFO){ .bmiHeader = {.biSize = sizeof(Window.bitmap_info.bmiHeader), .biWidth = Window.width,
+                                     .biHeight = Window.height, .biPlanes = 1, .biBitCount = 32, .biCompression = BI_RGB}};
+  Window.bitmap_device_context = GetDC(Window.handle);
+  
+  return 0;
+#endif
+}
+
+#ifndef RAYLIB
+// TODO: fix weird behaviour here (or don't use this function at all)
+i32 SetWindowSize(i32 size_x, i32 size_y){
+  RECT rect = { 0, 0, size_x, size_y };
+  if(size_x > GetSystemMetrics(SM_CXSCREEN) || size_y > GetSystemMetrics(SM_CYSCREEN))
+    return 0;
+  else if(size_x == GetSystemMetrics(SM_CXSCREEN) && size_y == GetSystemMetrics(SM_CYSCREEN)){
+    SetWindowLongPtr(Window.handle, GWL_STYLE, WS_POPUP | WS_VISIBLE);
+    AdjustWindowRectEx(&rect, WS_POPUP | WS_VISIBLE, false, 0);
+  }
+  else{
+    SetWindowLongPtr(Window.handle, GWL_STYLE, WS_CAPTION | WS_VISIBLE | WS_SYSMENU | WS_MAXIMIZEBOX | WS_MINIMIZEBOX);
+    AdjustWindowRectEx(&rect, WS_CAPTION | WS_VISIBLE | WS_SYSMENU | WS_MAXIMIZEBOX | WS_MINIMIZEBOX, false, 0);
+  }
+  Window.current_pos_x = (GetSystemMetrics(SM_CXSCREEN) / 2) - (size_x / 2);
+  Window.current_pos_y = (GetSystemMetrics(SM_CYSCREEN) / 2) - (size_y / 2); 
+  MoveWindow(Window.handle, Window.current_pos_x, Window.current_pos_y, rect.right - rect.left, rect.bottom - rect.top, true);
+  return 0;
+}
+#endif
+
+void UpdateKeyState(u32 key, u32 bitfield){
 #ifdef RAYLIB
   (void)bitfield;
 // Snippets from raylib. NOTE: do I need those keys?
@@ -282,7 +372,7 @@ void UpdateKeyState(uint32_t key, uint32_t bitfield){
   Key[key].is_released = IsKeyReleased(key);
 }
 #else
-  uint32_t mapped_key = key;
+  u32 mapped_key = key;
   bool was_down = bitfield >> 30 & 1;
   bool is_down = bitfield >> 31 ^ 1;
   //printf("key: %d %X\n", mapped_key, mapped_key);
@@ -373,8 +463,18 @@ LRESULT CALLBACK WindowProcedure(HWND window, UINT message, WPARAM w_param, LPAR
       Mouse.is_focused = false;
     } return 0;
     case WM_SIZE:{
-      Window.width = GET_X_LPARAM(l_param);
+      HBRUSH temp = CreateSolidBrush(0);
+      SelectObject(Window.bitmap_device_context, temp);
+      Rectangle(Window.bitmap_device_context, 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
+      //Window.width = GET_X_LPARAM(l_param);
       Window.height = GET_Y_LPARAM(l_param);
+      Window.width = (i32)floor(Window.height * Window.aspect_ratio);
+      Window.offset_x = (GET_X_LPARAM(l_param) - Window.width) / 2;
+      DeleteObject(temp);
+    } return 0;
+    case WM_MOVE:{
+      Window.current_pos_x = (i32)(i16) LOWORD(l_param);
+      Window.current_pos_y = (i32)(i16) HIWORD(l_param);
     } return 0;
     case WM_SETFOCUS:{
       Window.is_focused = true;
@@ -420,91 +520,52 @@ LRESULT CALLBACK WindowProcedure(HWND window, UINT message, WPARAM w_param, LPAR
 }
 #endif
 
-int32_t StartEngine(int32_t size_x, int32_t size_y, const char* name){
-#ifdef RAYLIB
-  InitWindow(size_x,size_y,name);
-  HideCursor();
-  SetWindowState(FLAG_WINDOW_UNDECORATED);
-  Window.bitmap_memory = MemAlloc(size_x * size_y * 4);
-  Window.bitmap_info = GenImageColor(size_x,size_y,BLACK);
-  Window.bitmap_device_context = LoadTextureFromImage(Window.bitmap_info);
-  Window.width = size_x;
-  Window.height = size_y;
-  Window.is_running = true;
-  Window.origin = (Vector2){0};
-  Window.screen = (Rectangle){0.f, 0.f, (float) Window.width, (float) Window.height};
-  InitializeClock();
-  return 0;
-#else  
-  wchar_t title[256];
-  MultiByteToWideChar(CP_UTF8,0,name,-1,title,MultiByteToWideChar(CP_UTF8,0,name,-1,NULL,0));
-
-  SetProcessDPIAware();
-  //PGNSI pGNSI = (PGNSI)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetProcessDpiAwarenessContext");
-  //if(pGNSI != NULL)
-  //  pGNSI(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
-  //SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
-  
-  HINSTANCE instance = GetModuleHandle(0);
-
-  const wchar_t class_name[] = L"Zenibou";
-  WNDCLASSW window_class = {.lpfnWndProc = WindowProcedure,.hInstance = instance,.style = CS_HREDRAW | CS_VREDRAW,
-                            .lpszClassName = class_name,.hCursor = LoadCursor(0, IDC_ARROW),};
-  ShowCursor(false);
-
-  RegisterClass(&window_class);
-  
-  Window.current_pos_x = (GetSystemMetrics(SM_CXSCREEN) / 2) - (size_x / 2);
-  Window.current_pos_y = (GetSystemMetrics(SM_CYSCREEN) / 2) - (size_y / 2); 
-
-  Window.handle = CreateWindowEx(//WS_EX_OVERLAPPEDWINDOW, //(https://docs.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles)
-                                 0, 
-                                 class_name, title,
-                                 WS_POPUP|WS_VISIBLE,
-                                 //|WS_VISIBLE,
-                                 Window.current_pos_x, // startx
-                                 Window.current_pos_y, // starty
-                                 size_x, // sizex
-                                 size_y, // sizey
-                                 0, 0, instance, 0);
-
-  Window.is_running = true;
-  InitializeClock();
-  
-  Window.bitmap_memory = VirtualAlloc(0,size_x * size_y * 4,MEM_RESERVE|MEM_COMMIT,PAGE_READWRITE);
-  Window.bitmap_info = (BITMAPINFO){ .bmiHeader = {.biSize = sizeof(Window.bitmap_info.bmiHeader), .biWidth = size_x,
-                                     .biHeight = size_y, .biPlanes = 1, .biBitCount = 32, .biCompression = BI_RGB}};
-  Window.bitmap_device_context = GetDC(Window.handle);
-  
-  return 0;
-#endif
-}
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "external/stb_image.h"
-
-typedef struct Sprite{
-  int32_t x, y;
-  int32_t width, height, channels;
-  uint8_t** data;
-} Sprite;
-
-void DrawSprite(Sprite* spr);
-Sprite AllocSprite(const uint8_t start[], int32_t len, int32_t x, int32_t y);
-void FreeSprite(Sprite* spr);
-
 void DrawSprite(Sprite* spr){
-  for(int32_t i = 0; i < spr->height; i++)
-    for(int32_t j = 0; j < spr->width; j++)
+  for(i32 i = 0; i < spr->height; i++)
+    for(i32 j = 0; j < spr->width; j++)
       D(spr->x + j, spr->y + i, spr->data[i][j*4] << 24 | spr->data[i][j*4+1] << 16 | (spr->data[i][j*4+2]) << 8 | spr->data[i][j*4+3]);
 }
 
-Sprite AllocSprite(const uint8_t start[], int32_t len, int32_t x, int32_t y){
+void FreeSprite(Sprite* spr){
+  Sprite tmp = {0};
+  for(i32 i = 0; i < spr->height; i++)
+    free(spr->data[i]);
+  free(spr->data);
+  *spr = tmp;
+}
+
+#ifndef RAYLIB
+void ToggleFullscreen(void){
+  if(Window.is_fullscreen){
+    SetWindowLongPtr(Window.handle, GWL_STYLE, WS_CAPTION | WS_VISIBLE | WS_SYSMENU | WS_MAXIMIZEBOX | WS_MINIMIZEBOX);
+    Window.width = Window.starting_width;
+    Window.height = Window.starting_height;
+    Window.is_fullscreen = false;
+    RECT rect = { 0, 0, Window.width, Window.height };
+    AdjustWindowRectEx(&rect, WS_OVERLAPPEDWINDOW | WS_VISIBLE, false, 0);  
+    MoveWindow(Window.handle,
+        (GetSystemMetrics(SM_CXSCREEN) / 2) - (Window.width / 2), (GetSystemMetrics(SM_CYSCREEN) / 2) - (Window.height / 2),
+        rect.right - rect.left, rect.bottom - rect.top, true);
+  }
+  else{
+    SetWindowLongPtr(Window.handle, GWL_STYLE, WS_POPUP | WS_VISIBLE);
+    MoveWindow(Window.handle, 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), true);
+    Window.is_fullscreen = true;
+  }
+}
+#endif
+
+#ifndef RAYLIB
+#define STB_IMAGE_IMPLEMENTATION
+#include "external/stb_image.h"
+#endif
+
+Sprite AllocSprite(const u8 start[], i32 len, i32 x, i32 y){
   Sprite spr = { x, y, };
-  uint8_t* reverse_rows = stbi_load_from_memory(start, len, &spr.width, &spr.height, &spr.channels, 4);
+  u8* reverse_rows = stbi_load_from_memory(start, len, &spr.width, &spr.height, &spr.channels, 4);
   // Reverse row order (from "left to right, top to bottom" to "left to right, bottom to top")
-  spr.data = malloc(sizeof(uint8_t*) * spr.height);
-  for(int i = 0; i < spr.height; i++){
+  spr.data = malloc(sizeof(u8*) * spr.height);
+  for(i32 i = 0; i < spr.height; i++){
     spr.data[i] = malloc(4 * spr.width);
     memcpy(spr.data[i], reverse_rows + (spr.height - 1 - i) * 4 * spr.width, 4 * spr.width);
   }
@@ -512,25 +573,6 @@ Sprite AllocSprite(const uint8_t start[], int32_t len, int32_t x, int32_t y){
   free(reverse_rows);
   return spr;
 }
-
-void FreeSprite(Sprite* spr){
-  Sprite tmp = {0};
-  for(int i = 0; i < spr->height; i++)
-    free(spr->data[i]);
-  free(spr->data);
-  *spr = tmp;
-}
-
-#ifndef RAYLIB
-#define IncludeMedia(x,type) extern unsigned char binary_##x##_##type##_start[];extern unsigned char binary_##x##_##type##_end[];
-#define MediaStart(x,type) binary_##x##_##type##_start
-#define MediaEnd(x,type) binary_##x##_##type##_end
-#else
-#define IncludeMedia(x,type) extern unsigned char _binary_##x##_##type##_start[];extern unsigned char _binary_##x##_##type##_end[];
-#define MediaStart(x,type) _binary_##x##_##type##_start
-#define MediaEnd(x,type) _binary_##x##_##type##_end
-#endif
-#define MediaSize(x,type) MediaEnd(x,type)-MediaStart(x,type)
 
 // NOTE: this was used for checking high-DPI settings
 ////#pragma comment(lib, "shcore.lib")
