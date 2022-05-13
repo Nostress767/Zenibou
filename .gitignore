@@ -11,3 +11,4 @@ Example.wasm
 Example.js
 Example.exe
 Example.obj
+*.o
