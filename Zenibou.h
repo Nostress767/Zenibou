@@ -12,6 +12,7 @@
 #define UNICODE
 #define STB_IMAGE_IMPLEMENTATION
 #include "external/stb_image.h"
+#define MA_NO_ENCODING
 #define MINIAUDIO_IMPLEMENTATION
 #include "external/miniaudio.h"
 #pragma comment(lib, "user32.lib")
