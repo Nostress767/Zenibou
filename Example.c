@@ -7,10 +7,18 @@
     #include <emscripten/emscripten.h>
 #endif
 
+IncludeMedia(Sound1,mp3)
+IncludeMedia(Sound2,mp3)
+
+Sound sound;
+
 void MainLoop(void);
 
 int main(void){
   StartEngine(600,600,"サンプル");
+
+  DeclareSound(MediaStart(Sound1,mp3), MediaSize(Sound1,mp3), "Test1");
+  DeclareSound(MediaStart(Sound2,mp3), MediaSize(Sound2,mp3), "Test2");
   
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(MainLoop, 120, 1);
@@ -26,7 +34,11 @@ int main(void){
 void MainLoop(void){
   char stringo[12] = {0};
   BeginFrame();
-    if(Key['F'].is_pressed)
+    if(Key['G'].is_pressed)
+      PlaySound("Test1");
+    else if(Key['H'].is_pressed)
+      PlaySound("Test2");
+    else if(Key['F'].is_pressed)
       ToggleFullscreen();
     else if(Key['T'].is_pressed)
       SetWindowSize(400, 400);

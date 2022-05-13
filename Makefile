@@ -5,16 +5,25 @@ linuxlf=-Lobj/ -Llib -l:raylib.a -lGL -lm -lpthread -ldl -lrt -lX11
 ecf=-DRAYLIB -Iinclude
 elf=-Llib -lraylib -lgdi32 -lWinmm
 
-resources=
+resources=Sound1.mp3 Sound2.mp3
+linuxresources=
 
-Example:
-	gcc $(cf) -o $@ $@.c $(lf) $(resources)
+Example: $(resources)
+	gcc $(cf) -o $@ $@.c $(addsuffix .o, $(basename $(resources))) $(lf)
 
-ray: $(deps)
+ray: $(resources)
 	gcc $(cf) $(ecf) -o Example Example.c $(lf) $(resources) $(elf)
 
-linux: $(deps)
+linux: $(linuxresources)
 	gcc $(cf) -o Example Example.c $(ecf) $(linuxlf) $(resources)
+
+.PHONY: $(resources)
+$(resources):
+	objcopy -I binary -O pe-i386 -B i386 $@ $(basename $@).o
+
+.PHONY: $(linuxresources)
+$(linuxresources):
+	objcopy -I binary -O elf32-i386 -B i386 $@ $(basename $@).o
 
 clean:
 	$(RM) Example.exe

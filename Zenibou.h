@@ -1,12 +1,19 @@
 ﻿#ifndef _ZENIBOU_ZENIBOU_H_
 #define _ZENIBOU_ZENIBOU_H_
 
-#include <time.h>
-#include <stdint.h>
-#include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 #if !defined(PLATFORM_WEB) && defined(_WIN32)
+#define UNICODE
+#define STB_IMAGE_IMPLEMENTATION
+#include "external/stb_image.h"
+#define MINIAUDIO_IMPLEMENTATION
+#include "external/miniaudio.h"
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "gdi32.lib")
 #endif
@@ -23,10 +30,10 @@
 #else
   #define DPI_AWARENESS_CONTEXT_SYSTEM_AWARE ((DPI_AWARENESS_CONTEXT)-2)
   #define WIN32_LEAN_AND_MEAN
-  #define UNICODE
   #define _CRT_SECURE_NO_WARNINGS
   #include <windows.h>
   #include <windowsx.h>
+  #undef PlaySound
   //typedef void (WINAPI *PGNSI)(DPI_AWARENESS_CONTEXT);
   LRESULT CALLBACK WindowProcedure(HWND window, UINT message, WPARAM w_param, LPARAM l_param);
 #endif
@@ -42,6 +49,80 @@
 #define u16 uint16_t
 #define u32 uint32_t
 #define u64 uint64_t
+
+#define SoundStart(sound) ma_sound_start(&sound)
+#define SoundStop(sound) ma_sound_stop(&sound)
+#define SoundSeek(sound, frame) ma_sound_start(&sound, frame)
+
+typedef ma_sound Sound;
+
+//
+// BEGIN Circular Dynamic Linked List with Sentinel API
+//
+
+// Use this to create a list.
+#define CreateList(type) AllocList(sizeof(type))
+
+typedef struct Node{
+	void* data;
+	struct Node* prev, *next;
+} Node;
+
+typedef struct List{
+	struct Node* sentinel;
+	size_t sz;
+	int32_t n;
+} List;
+
+typedef struct ListIterator{
+	Node* cur;
+	List* list;
+} ListIterator;
+
+typedef ListIterator list_iterator;
+
+// Memory manipulation.
+List AllocList(size_t sz);
+void FreeList(List* self);
+
+// Mutators.
+void ListPushBack(List* self, void* element);
+void ListPushFront(List* self, void* element);
+bool ListPopBack(List* self);
+bool ListPopFront(List* self);
+
+// Getters.
+void* ListBack(List l);
+void* ListFront(List l);
+bool ListEmpty(List l);
+int32_t ListSize(List l);
+
+// Create ListIterator.
+ListIterator ListIterateFromFront(List* self);
+ListIterator ListIterateFromBack(List* self);
+
+// Insert based on iterator.
+void ListInsertPrev(ListIterator* self, void* element);
+void ListInsertNext(ListIterator* self, void* element);
+
+// Remove based on iterator.
+bool ListRemovePrev(ListIterator* self);
+bool ListRemoveNext(ListIterator* self);
+ListIterator ListRemove(ListIterator* self);
+
+// Get element from iterator.
+void* ListPrevElement(ListIterator it);
+void* ListNextElement(ListIterator it);
+void* ListElement(ListIterator it);
+
+// Move through iterator.
+ListIterator ListPrev(ListIterator it);
+ListIterator ListNext(ListIterator it);
+bool ListEnd(ListIterator it);
+
+//
+// END Linked List API
+//
 
 #ifndef RAYLIB
 #define IncludeMedia(x,type) extern unsigned char binary_##x##_##type##_start[];extern unsigned char binary_##x##_##type##_end[];
@@ -61,6 +142,12 @@ typedef struct Sprite{
   u8** data;
 } Sprite;
 
+#ifndef RAYLIB
+void InitializeAudio(void);
+void PlaySound(const char* name);
+void DeclareSound(const u8 start[], i32 len, const char* name);
+Sound AllocSound(const u8 start[], i32 len, bool loops);
+#endif
 void InitializeClock(void);
 void Tick(void);
 void BeginFrame(void);
@@ -132,6 +219,9 @@ struct Window{
     Rectangle screen;
     Rectangle starting_screen;
   #elif _WIN32
+    ma_engine audio_engine;
+    ma_decoder_config decoder_config;
+    List audio_decoders;
     BITMAPINFO bitmap_info;
     HDC bitmap_device_context;
     MSG msg;
@@ -330,6 +420,7 @@ i32 StartEngine(i32 size_x, i32 size_y, const char* name){
 
   Window.is_running = true;
   InitializeClock();
+  InitializeAudio();
   
   Window.is_fullscreen = false;
   Window.bitmap_memory = VirtualAlloc(0,Window.width * Window.height * 4,MEM_RESERVE|MEM_COMMIT,PAGE_READWRITE);
@@ -555,11 +646,6 @@ void ToggleFullscreen(void){
 }
 #endif
 
-#ifndef RAYLIB
-#define STB_IMAGE_IMPLEMENTATION
-#include "external/stb_image.h"
-#endif
-
 Sprite AllocSprite(const u8 start[], i32 len, i32 x, i32 y){
   Sprite spr = { x, y, };
   u8* reverse_rows = stbi_load_from_memory(start, len, &spr.width, &spr.height, &spr.channels, 4);
@@ -573,6 +659,219 @@ Sprite AllocSprite(const u8 start[], i32 len, i32 x, i32 y){
   free(reverse_rows);
   return spr;
 }
+
+#ifndef RAYLIB
+void InitializeAudio(void){
+  ma_engine_init(NULL, &Window.audio_engine);
+  Window.audio_decoders = CreateList(ma_decoder);
+  Window.decoder_config = ma_decoder_config_init_default();
+}
+
+void PlaySound(const char* name){
+  ma_engine_play_sound(&Window.audio_engine, name, NULL);
+}
+void DeclareSound(const u8 start[], i32 len, const char* name){
+  ma_resource_manager_register_encoded_data(ma_engine_get_resource_manager(&Window.audio_engine), name, start, len);
+}
+Sound AllocSound(const u8 start[], i32 len, bool loops){  
+  ma_decoder decoder = { 0 };
+  ListPushBack(&Window.audio_decoders, &decoder);
+  ma_decoder_init_memory(start, len, &Window.decoder_config, (ma_decoder*)ListBack(Window.audio_decoders));
+
+  ma_sound sound = { 0 };
+  ma_sound_init_from_data_source(&Window.audio_engine, (ma_decoder*)ListBack(Window.audio_decoders), MA_SOUND_FLAG_DECODE, NULL, &sound);
+
+  if(loops)
+    ma_sound_set_looping(&sound, MA_TRUE);
+
+  return sound;
+}
+#endif
+
+List AllocList(size_t sz){
+  List l = { malloc(sizeof(Node)), sz, 0 };
+  l.sentinel->prev = l.sentinel->next = l.sentinel;
+  l.sentinel->data = NULL;
+  return l;
+}
+
+void FreeList(List* self){
+  while(ListPopBack(self));
+  free(self->sentinel);
+  List temp = { 0 };
+  *self = temp;
+}
+
+void ListPushBack(List* self, void* element){
+  Node* new_node = malloc(sizeof(Node));
+  new_node->data = malloc(self->sz);
+  new_node->next = self->sentinel;
+  if(ListEmpty(*self)){
+    self->sentinel->next = new_node;
+    new_node->prev = self->sentinel;}
+  else{
+    new_node->prev = self->sentinel->prev;
+    self->sentinel->prev->next = new_node;}
+  self->sentinel->prev = new_node;
+  memmove(new_node->data, element, self->sz);
+  self->n++;
+}
+
+void ListPushFront(List* self, void* element){
+  Node* new_node = malloc(sizeof(Node));
+  new_node->data = malloc(self->sz);
+  new_node->prev = self->sentinel;
+  if(ListEmpty(*self)){
+    self->sentinel->prev = new_node;
+    new_node->next = self->sentinel;}
+  else{
+    new_node->next = self->sentinel->next;
+    self->sentinel->next->prev = new_node;}
+  self->sentinel->next = new_node;
+  memmove(new_node->data, element, self->sz);
+  self->n++;
+}
+
+bool ListPopBack(List* self){
+  if(ListEmpty(*self))
+    return false;
+  Node* old_node = self->sentinel->prev;
+  self->sentinel->prev = old_node->prev;
+  self->sentinel->prev->next = self->sentinel;
+  free(old_node->data);
+  free(old_node);
+  self->n--;
+  return true;
+}
+
+bool ListPopFront(List* self){
+  if(ListEmpty(*self))
+    return false;
+  Node* old_node = self->sentinel->next;
+  self->sentinel->next = old_node->next;
+  self->sentinel->next->prev = self->sentinel;
+  free(old_node->data);
+  free(old_node);
+  self->n--;
+  return true;
+}
+
+void* ListBack(List l){
+  if(ListEmpty(l))
+    return NULL;
+  return l.sentinel->prev->data;
+}
+
+void* ListFront(List l){
+  if(ListEmpty(l))
+    return NULL;
+  return l.sentinel->next->data;
+}
+
+bool ListEmpty(List l){ return !l.n; }
+
+int32_t ListSize(List l){ return l.n; }
+
+ListIterator ListIterateFromFront(List* self){
+  ListIterator it = { self->sentinel->next, self };
+  return it;
+}
+
+ListIterator ListIterateFromBack(List* self){
+  ListIterator it = { self->sentinel->prev, self };
+  return it;
+}
+
+void ListInsertPrev(ListIterator* self, void* element){
+  Node* new_node = malloc(sizeof(Node));
+  new_node->data = malloc(self->list->sz);
+  memmove(new_node->data, element, self->list->sz);
+  new_node->prev = self->cur->prev;
+  new_node->next = self->cur;
+  new_node->prev->next = new_node;
+  self->cur->prev = new_node;
+  self->list->n++;
+}
+
+void ListInsertNext(ListIterator* self, void* element){
+  Node* new_node = malloc(sizeof(Node));
+  new_node->data = malloc(self->list->sz);
+  memmove(new_node->data, element, self->list->sz);
+  new_node->next = self->cur->next;
+  new_node->prev = self->cur;
+  new_node->next->prev = new_node;
+  self->cur->next = new_node;
+  self->list->n++;
+}
+
+bool ListRemovePrev(ListIterator* self){
+  if(ListEmpty(*self->list))
+    return false;
+  Node* old_node = self->cur->prev;
+  self->cur->prev = old_node->prev;
+  self->cur->prev->next = self->cur;
+  free(old_node->data);
+  free(old_node);
+  self->list->n--;
+  return true;
+}
+
+bool ListRemoveNext(ListIterator* self){
+  if(ListEmpty(*self->list))
+    return false;
+  Node* old_node = self->cur->next;
+  self->cur->next = old_node->next;
+  self->cur->next->prev = self->cur;
+  free(old_node->data);
+  free(old_node);
+  self->list->n--;
+  return true;
+}
+
+ListIterator ListRemove(ListIterator* self){
+  if(ListEmpty(*self->list))
+    return (ListIterator){ 0 };
+  Node* new_node = self->cur->next;
+  self->cur->prev->next = self->cur->next;
+  self->cur->next->prev = self->cur->prev;
+  self->list->n--;
+  ListIterator new_it = { new_node, self->list };
+  free(self->cur->data);
+  free(self->cur);
+  return new_it;
+}
+
+void* ListPrevElement(ListIterator it){
+  if(it.cur->prev == it.list->sentinel)
+    return it.cur->prev->prev->data;
+  return it.cur->prev->data;
+}
+
+void* ListNextElement(ListIterator it){
+  if(it.cur->next == it.list->sentinel)
+    return it.cur->next->next->data;
+  return it.cur->next->data;
+}
+
+void* ListElement(ListIterator it){
+  return it.cur->data;
+}
+
+ListIterator ListPrev(ListIterator it){
+  if(it.cur == it.list->sentinel)
+    return it;
+  it.cur = it.cur->prev;
+  return it;
+}
+
+ListIterator ListNext(ListIterator it){
+  if(it.cur == it.list->sentinel)
+    return it;
+  it.cur = it.cur->next;
+  return it;
+}
+
+bool ListEnd(ListIterator it){ return (it.cur == it.list->sentinel); }
 
 // NOTE: this was used for checking high-DPI settings
 ////#pragma comment(lib, "shcore.lib")
