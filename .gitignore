@@ -1,14 +1,6 @@
-controller/
-include/
-lib/
 networking/
-sound/
-tests/
 w64devkit/
-Example.html
 Example
-Example.wasm
-Example.js
 Example.exe
 Example.obj
 *.o
