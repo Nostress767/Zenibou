@@ -174,6 +174,7 @@ void C(u32 color);
 i32 StartEngine(i32 size_x, i32 size_y, const char *name);
 void SetWindowSize(i32 size_x, i32 size_y);
 void UpdateKeyState(u32 key, u32 bitfield);
+void DrawFontSprite(Sprite* spr, i32 size_x, i32 size_y, i32 x, i32 y, char* text, u32 color, i32 scale, i32 space_x, i32 space_y);
 void DrawSprite(Sprite *spr);
 void FreeSprite(Sprite *spr);
 Sprite AllocSprite(const u8 start[], i32 len, i32 x, i32 y);
@@ -470,7 +471,17 @@ void C(u32 color) {
 #endif
 }
 
+// Always load these fonts
+IncludeMedia(font5x6,png);
+IncludeMedia(font5x5,png);
+Sprite internal_font5x6;
+Sprite internal_font5x5;
+#define DrawString5x6(x,y,str,col,scal,spc_x,spc_y) DrawFontSprite(&internal_font5x6,5,6,x,y,str,col,scal,spc_x,spc_y)
+#define DrawString5x5(x,y,str,col,scal,spc_x,spc_y) DrawFontSprite(&internal_font5x5,5,5,x,y,str,col,scal,spc_x,spc_y)
+
 i32 StartEngine(i32 size_x, i32 size_y, const char *name) {
+  internal_font5x6 = AllocSprite(MediaStart(font5x6,png), MediaSize(font5x6,png), 0, 0);
+  internal_font5x5 = AllocSprite(MediaStart(font5x5,png), MediaSize(font5x5,png), 0, 0);
 #ifndef _WIN32
   // TODO: check if high DPI settings are needed
   W.display = XOpenDisplay(0);
@@ -1582,6 +1593,30 @@ void SendRumble(i32 controller, u16 left, u16 right) {
   XInputSetState(controller, &(XINPUT_VIBRATION){left, right});
 }
 #endif
+
+void DrawFontSprite(Sprite* spr, i32 size_x, i32 size_y, i32 x, i32 y, char* text, u32 color, i32 scale, i32 space_x, i32 space_y){
+  int32_t text_x = 0, text_y = 0;
+  size_t str_len = strlen(text);
+  for(size_t i = 0; i < str_len; i++){
+    if(text[i] == '\n'){
+      text_x = 0; text_y -= size_y * scale + space_y;}
+    else{
+      uint32_t char_index_x = (text[i] - 32) % 16, char_index_y = (text[i] - 32) / 16;
+      if(scale > 1){
+        for(uint32_t j = 0; j < size_x; j++)
+          for(uint32_t k = 0; k < size_y; k++)
+            if(spr->data[k + char_index_y * size_y][(j + char_index_x * size_x) * 4])
+              for (uint32_t scaled_i = 0; scaled_i < scale; scaled_i++)
+                for (uint32_t scaled_j = 0; scaled_j < scale; scaled_j++)
+                  D(x + text_x + (j * scale) + scaled_i, y + text_y + (k * scale) + scaled_j, color);
+      }
+      else{
+        for(uint32_t j = 0; j < size_x; j++)
+          for(uint32_t k = 0; k < size_y; k++)
+            if(spr->data[k + char_index_y * size_y][(j + char_index_x * size_x) * 4])
+              D(x + text_x + j, y + text_y + k, color);}
+      text_x += (size_x + space_x) * scale ;}}
+}
 
 void DrawSprite(Sprite *spr) {
   for (i32 i = 0; i < spr->height; i++)

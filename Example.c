@@ -1,5 +1,4 @@
 #include "Zenibou.h"
-#include "fonts/font5x6.h"
 #include <stdio.h>
 
 IncludeMedia(Sound1, mp3);
