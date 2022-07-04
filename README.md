@@ -12,7 +12,9 @@ On the new terminal, simply type:
 
 Building the example on GNU/Linux
 --------------
-Make sure that you have libx11-dev or your distribution's equivalent of [Xlib](https://www.x.org/wiki/).
+Make sure that you have your distribution's equivalent of [Xlib](https://www.x.org/wiki/) and Xinput:
+- libx11-dev and libxi-dev on Ubuntu
+- libX11-devel and libXi-devel on Fedora
 
 Also make sure to have GNU Make and GCC installed.
 
