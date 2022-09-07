@@ -1033,6 +1033,8 @@ void UpdateKeyState(u32 key, u32 bitfield) {
   Key[mapped_key].is_pressed = is_down;
   Key[mapped_key].is_held = false;
   Key[mapped_key].is_released = (was_down) & (!is_down);
+  if(Key[kF4].is_pressed && ((bitfield >> 29) & 1)) // Check Alt-F4
+    W.is_running = false;
 #endif
 }
 
