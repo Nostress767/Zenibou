@@ -307,16 +307,16 @@ struct Joystick {
   i32 axis[16];
 } Joystick[4] = {
 #ifndef _WIN32
-    {{0}, -1, "/dev/input/js0", {0}, false, 0, 0, {0}, {0}},
-    {{0}, -1, "/dev/input/js1", {0}, false, 0, 0, {0}, {0}},
-    {{0}, -1, "/dev/input/js2", {0}, false, 0, 0, {0}, {0}},
-    {{0}, -1, "/dev/input/js3", {0}, false, 0, 0, {0}, {0}}
+    {{{{0}}, -1, "/dev/input/js0", {{0}}, false, 0, 0, {{0}}, {0}}}},
+    {{{{0}}, -1, "/dev/input/js1", {{0}}, false, 0, 0, {{0}}, {0}}}},
+    {{{{0}}, -1, "/dev/input/js2", {{0}}, false, 0, 0, {{0}}, {0}}}},
+    {{{{0}}, -1, "/dev/input/js3", {{0}}, false, 0, 0, {{0}}, {0}}}}
 #else
     // To Windows every controller is Xbox Controller
-    {{0}, {"Xbox Controller"}, false, 6, 14, {0}, {0}},
-    {{0}, {"Xbox Controller"}, false, 6, 14, {0}, {0}},
-    {{0}, {"Xbox Controller"}, false, 6, 14, {0}, {0}},
-    {{0}, {"Xbox Controller"}, false, 6, 14, {0}, {0}}
+    { {0}, "Xbox Controller", false, 6, 14, {{0}}, {0}},
+    { {0}, "Xbox Controller", false, 6, 14, {{0}}, {0}},
+    { {0}, "Xbox Controller", false, 6, 14, {{0}}, {0}},
+    { {0}, "Xbox Controller", false, 6, 14, {{0}}, {0}}
 #endif
 };
 
@@ -352,6 +352,9 @@ struct W {
   HDC bitmap_device_context;
   MSG msg;
   HWND handle;
+  HMODULE xinput_library;
+  DWORD (WINAPI *xinput_get_state)(DWORD, XINPUT_STATE*);
+  DWORD (WINAPI *xinput_set_state)(DWORD, XINPUT_VIBRATION*);
 #endif
 } W;
 
@@ -381,13 +384,15 @@ void TickClock(void) {
 }
 
 void BeginFrame(void) {
-  UpdateJoystickState();
 #ifndef _WIN32
+  UpdateJoystickState();
   while (XPending(W.display) > 0) {
     XNextEvent(W.display, &W.msg);
     ProcessXEvent();
   }
 #else
+  if(W.xinput_library)
+    UpdateJoystickState();
   while (PeekMessage(&W.msg, NULL, 0, 0, PM_REMOVE)) {
     TranslateMessage(&W.msg);
     DispatchMessage(&W.msg);
@@ -581,6 +586,11 @@ i32 StartEngine(i32 size_x, i32 size_y, const char *name) {
                                  .biBitCount = 32,
                                  .biCompression = BI_RGB}};
   W.bitmap_device_context = GetDC(W.handle);
+  W.xinput_library = LoadLibraryA("xinput1_3.dll");
+  if(W.xinput_library){
+    W.xinput_get_state = (DWORD (WINAPI *)(DWORD, XINPUT_STATE*))GetProcAddress(W.xinput_library, "XInputGetState");
+    W.xinput_set_state = (DWORD (WINAPI *)(DWORD, XINPUT_VIBRATION*))GetProcAddress(W.xinput_library, "XInputSetState");
+  }
 #endif
   W.is_running = true;
   InitializeClock();
@@ -1441,8 +1451,8 @@ void UpdateJoystickState(void) {
   // TODO: Maybe investigate Winmm for joystick input (only if it's better for
   // this use)
   for (i32 i = 0; i < 4; i++) {
-    if (Joystick[i].is_on =
-            (XInputGetState(i, &Joystick[i].js_state) == ERROR_SUCCESS)) {
+    if ((Joystick[i].is_on =
+            (W.xinput_get_state(i, &Joystick[i].js_state) == ERROR_SUCCESS))) {
       // Joystick is connected
 
       if (!Joystick[i].button[kDpadUp].is_held) {
@@ -1590,7 +1600,7 @@ void UpdateJoystickState(void) {
 // TODO: implement joystick rumble for linux
 #else
 void SendRumble(i32 controller, u16 left, u16 right) {
-  XInputSetState(controller, &(XINPUT_VIBRATION){left, right});
+  W.xinput_set_state(controller, &(XINPUT_VIBRATION){left, right});
 }
 #endif
 
