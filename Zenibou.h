@@ -307,10 +307,10 @@ struct Joystick {
   i32 axis[16];
 } Joystick[4] = {
 #ifndef _WIN32
-    {{{{0}}, -1, "/dev/input/js0", {{0}}, false, 0, 0, {{0}}, {0}}}},
-    {{{{0}}, -1, "/dev/input/js1", {{0}}, false, 0, 0, {{0}}, {0}}}},
-    {{{{0}}, -1, "/dev/input/js2", {{0}}, false, 0, 0, {{0}}, {0}}}},
-    {{{{0}}, -1, "/dev/input/js3", {{0}}, false, 0, 0, {{0}}, {0}}}}
+    {{0}, -1, "/dev/input/js0", {0}, false, 0, 0, {0}, {0}},
+    {{0}, -1, "/dev/input/js1", {0}, false, 0, 0, {0}, {0}},
+    {{0}, -1, "/dev/input/js2", {0}, false, 0, 0, {0}, {0}},
+    {{0}, -1, "/dev/input/js3", {0}, false, 0, 0, {0}, {0}}
 #else
     // To Windows every controller is Xbox Controller
     { {0}, "Xbox Controller", false, 6, 14, {{0}}, {0}},
